@@ -39,11 +39,29 @@ namespace DiplomacyReworked
 
         private void AddGameMenus(CampaignGameStarter campaignGameStarter)
         {
-            campaignGameStarter.AddGameMenuOption(MENU_TOWN_KEY, MENU_ID+MENU_TOWN_KEY, MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), false, MENU_TOWN_INSERT_INDEX, false);
-            campaignGameStarter.AddGameMenuOption(MENU_CASTLE_KEY, MENU_ID + MENU_CASTLE_KEY, MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), false, MENU_CASTLE_INSERT_INDEX, false);
+            bool isLeave = false;
+            bool isRepeatable = false;
+            campaignGameStarter.AddGameMenuOption(MENU_TOWN_KEY, MENU_ID + MENU_TOWN_KEY, MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, MENU_TOWN_INSERT_INDEX, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(MENU_CASTLE_KEY, MENU_ID + MENU_CASTLE_KEY, MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, MENU_CASTLE_INSERT_INDEX, isRepeatable);
 
 
             campaignGameStarter.AddGameMenu(MENU_ID, MENU_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
+
+            // Adding the "Make Peace" Menu entry
+            campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "_negotiate_peace", "Negotiate Peace", new GameMenuOption.OnConditionDelegate(canNegotiatePeace), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, 0, isRepeatable);
+
+            // string factionName = "";
+            // List<IFaction> enemyFactions = FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).ToList();
+            // for (int i = 0; i < enemyFactions.Capacity; i++)
+            // {
+            //    factionName = enemyFactions.ElementAt(i).Name.ToString();
+                // campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + factionName, "Make peace with " + factionName, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, MENU_TOWN_INSERT_INDEX, isRepeatable);
+            //}
+        }
+
+        private bool canNegotiatePeace(MenuCallbackArgs args)
+        {
+            return !FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).IsEmpty();
         }
 
         private void MenuOnInit(MenuCallbackArgs args)
