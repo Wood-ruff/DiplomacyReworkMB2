@@ -8,7 +8,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 
-namespace Diplomacy_Reworked
+namespace DiplomacyReworked
 {
     public class Main : MBSubModuleBase
     {
@@ -21,7 +21,7 @@ namespace Diplomacy_Reworked
         {
             if (game.GameType is Campaign)
             {
-
+                gameInitializer.AddBehavior(new DiplomacyReworkedMenuBehaviour());
             }
         }
     }
