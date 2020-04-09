@@ -8,6 +8,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
+using TaleWorlds.CampaignSystem;
 
 namespace DiplomacyReworked
 {
@@ -39,7 +40,11 @@ namespace DiplomacyReworked
 
         private void menuConsequence(MenuCallbackArgs args)
         {
-            InformationManager.DisplayMessage(new InformationMessage("Placeholder Text"));
+            List<IFaction> enemyFactions = FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).ToList();
+            foreach (IFaction faction in enemyFactions)
+            {
+                InformationManager.DisplayMessage(new InformationMessage(faction.Name.ToString()));
+            }  
         }
 
         private bool menuCondition(MenuCallbackArgs args)
