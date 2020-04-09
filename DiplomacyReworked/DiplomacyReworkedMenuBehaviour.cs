@@ -24,6 +24,7 @@ namespace DiplomacyReworked
         private const string MENU_TEXT = "Select a Kingdom to negotiate";
 
 
+
         public override void RegisterEvents()
         {
             CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(
@@ -47,16 +48,40 @@ namespace DiplomacyReworked
 
             campaignGameStarter.AddGameMenu(MENU_ID, MENU_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
 
-            // Adding the "Make Peace" Menu entry
-            campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "_negotiate_peace", "Negotiate Peace", new GameMenuOption.OnConditionDelegate(canNegotiatePeace), new GameMenuOption.OnConsequenceDelegate(printAllFactions), isLeave, 0, isRepeatable);
+          
+            string factionName = "";
+            int currentMaxIndex = 0;
+            foreach (IFaction faction in Campaign.Current.Factions.ToList())
+            {
+                if (faction.IsKingdomFaction && faction != Hero.MainHero.MapFaction && faction.Name.ToString() != "Return")
+                {
+                    factionName = faction.Name.ToString();
+                    campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + factionName, factionName, new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectMenuConsequence), isLeave, currentMaxIndex, isRepeatable);
+                    currentMaxIndex++;
+                }
+            }
+            campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "quit", "Return to Menu", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectMenuQuitConsequence), false, currentMaxIndex, isRepeatable);
+        }
 
-            // string factionName = "";
-            // List<IFaction> enemyFactions = FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).ToList();
-            // for (int i = 0; i < enemyFactions.Capacity; i++)
-            // {
-            //    factionName = enemyFactions.ElementAt(i).Name.ToString();
-                // campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + factionName, "Make peace with " + factionName, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, MENU_TOWN_INSERT_INDEX, isRepeatable);
-            //}
+        private void selectMenuQuitConsequence(MenuCallbackArgs args)
+        {
+            if (Hero.MainHero.CurrentSettlement.IsTown)
+            {
+                GameMenu.SwitchToMenu("town");
+            }
+            else
+            {
+                GameMenu.SwitchToMenu("castle");
+            }
+        }
+
+        private bool selectMenuCondition(MenuCallbackArgs args)
+        {
+            return true;
+        }
+        private void selectMenuConsequence(MenuCallbackArgs args)
+        {
+            DisplayInfoMsg(args.MenuTitle.ToString());
         }
 
         // Debug Method to display all factions
@@ -80,7 +105,7 @@ namespace DiplomacyReworked
 
         private void menuConsequence(MenuCallbackArgs args)
         {
-            
+
             //BarterManager.Instance.InitializeMakePeaceBarterContext(new PeaceBarterable(Hero.MainHero,Hero.MainHero,Hero.MainHero.OwnedParties.First(),Hero.MainHero.MapFaction,CampaignTime.Now),data,null);
             GameMenu.SwitchToMenu(MENU_ID);
         }
