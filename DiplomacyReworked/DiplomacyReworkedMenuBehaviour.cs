@@ -8,8 +8,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
-using TaleWorlds.CampaignSystem;
-using NetworkMessages.FromServer;
+using TaleWorlds.CampaignSystem.Barterables;
 
 namespace DiplomacyReworked
 {
@@ -46,16 +45,42 @@ namespace DiplomacyReworked
 
             campaignGameStarter.AddGameMenu(MENU_ID, MENU_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
 
+            isLeave = true;
             // Adding the "Make Peace" Menu entry
-            campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "_negotiate_peace", "Negotiate Peace", new GameMenuOption.OnConditionDelegate(canNegotiatePeace), new GameMenuOption.OnConsequenceDelegate(printAllFactions), isLeave, 0, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "_negotiate_peace", "Negotiate Peace", new GameMenuOption.OnConditionDelegate(canNegotiatePeace), new GameMenuOption.OnConsequenceDelegate(attemptPeaceBarter), isLeave, 0, isRepeatable);
+
 
             // string factionName = "";
             // List<IFaction> enemyFactions = FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).ToList();
             // for (int i = 0; i < enemyFactions.Capacity; i++)
             // {
             //    factionName = enemyFactions.ElementAt(i).Name.ToString();
-                // campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + factionName, "Make peace with " + factionName, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, MENU_TOWN_INSERT_INDEX, isRepeatable);
+            // campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + factionName, "Make peace with " + factionName, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, MENU_TOWN_INSERT_INDEX, isRepeatable);
             //}
+        }
+
+        // Debug method to attempt to do a barter with an enemy kingdom
+        private void attemptPeaceBarter(MenuCallbackArgs args)
+        {
+            List<IFaction> enemyFactions = FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).ToList();
+
+            Hero owner = Hero.MainHero;
+            Hero other = enemyFactions.ElementAt(0).Leader;
+
+            PartyBase offererParty = PartyBase.MainParty;
+            MobileParty otherParty = other.PartyBelongedTo;
+
+
+            // BarterData 
+            //PeaceBarterable barterable =  PeaceBarterable(Hero.MainHero, enemyFactions.ElementAt(0).Leader, enemyFactions.ElementAt(0), null);
+            CampaignTime duration = CampaignTime.Days(Campaign.Current.CampaignDt);
+            PeaceBarterable barterable = new PeaceBarterable(owner, other, offererParty, enemyFactions.ElementAt(0), duration);
+            barterable.Apply();
+            // BarterData data = new BarterData(owner, other, offererParty, otherParty);
+
+            // BarterManager.Instance.InitializeMakePeaceBarterContext(barterable, data, null);
+            //BarterManager.Instance.StartBarterOffer(other, owner, (otherParty != null) ? otherParty.Party : null, offererParty);
+            //enemyFactions.ElementAt(0).Leader
         }
 
         // Debug Method to display all factions
