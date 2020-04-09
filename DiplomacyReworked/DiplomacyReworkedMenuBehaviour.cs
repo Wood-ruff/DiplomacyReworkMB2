@@ -17,7 +17,11 @@ namespace DiplomacyReworked
         private const int MENU_CASTLE_INSERT_INDEX = 3;
         private const string MENU_TOWN_KEY = "town";
         private const string MENU_CASTLE_KEY = "castle";
-        private const string MENU_TITLE = "Diplomacy";
+        private const string MENU_ID = "diplomacy";
+        private const string MENU_BUTTON_TITLE = "Diplomacy";
+        private const string MENU_TEXT = "Select a Kingdom to negotiate";
+
+
         public override void RegisterEvents()
         {
             CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(
@@ -33,13 +37,21 @@ namespace DiplomacyReworked
 
         private void AddGameMenus(CampaignGameStarter campaignGameStarter)
         {
-            campaignGameStarter.AddGameMenuOption(MENU_TOWN_KEY, "make_diplomacy_town", MENU_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), false, MENU_TOWN_INSERT_INDEX, false);
-            campaignGameStarter.AddGameMenuOption(MENU_CASTLE_KEY, "make_diplomacy_castle", MENU_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), false, MENU_CASTLE_INSERT_INDEX, false);
+            campaignGameStarter.AddGameMenuOption(MENU_TOWN_KEY, MENU_ID+MENU_TOWN_KEY, MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), false, MENU_TOWN_INSERT_INDEX, false);
+            campaignGameStarter.AddGameMenuOption(MENU_CASTLE_KEY, MENU_ID + MENU_CASTLE_KEY, MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), false, MENU_CASTLE_INSERT_INDEX, false);
+
+            campaignGameStarter.AddGameMenu(MENU_ID, MENU_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
+        }
+
+        private void MenuOnInit(MenuCallbackArgs args)
+        {
+            Campaign.Current.GameMenuManager.MenuLocations.Clear();
         }
 
         private void menuConsequence(MenuCallbackArgs args)
         {
             InformationManager.DisplayMessage(new InformationMessage("Placeholder Text"));
+            GameMenu.SwitchToMenu(MENU_ID);
         }
 
         private bool menuCondition(MenuCallbackArgs args)
