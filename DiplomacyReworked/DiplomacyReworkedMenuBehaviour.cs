@@ -67,14 +67,28 @@ namespace DiplomacyReworked
             campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "quit", "Return to Menu", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectMenuQuitConsequence), false, -1, isRepeatable);
 
             campaignGameStarter.AddGameMenu(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
-            campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "war", "Declare War", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectActionWarConsequence), false, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "war", "Declare War", new GameMenuOption.OnConditionDelegate(selectActionWarCondition), new GameMenuOption.OnConsequenceDelegate(selectActionWarConsequence), false, -1, isRepeatable);
             campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "quit", "Return to Selection", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectActionQuitConsequence), false, -1, isRepeatable);
 
         }
 
+        private bool selectActionWarCondition(MenuCallbackArgs args)
+        {
+            return !Hero.MainHero.MapFaction.IsAtWarWith(this.currentSelectedFaction);
+        }
+
         private void selectActionWarConsequence(MenuCallbackArgs args)
         {
-            DeclareWarAction.Apply(Hero.MainHero.MapFaction, this.currentSelectedFaction);
+            if (!Hero.MainHero.MapFaction.IsAtWarWith(this.currentSelectedFaction))
+            {
+                DeclareWarAction.Apply(Hero.MainHero.MapFaction, this.currentSelectedFaction);
+                Campaign.Current.GameMenuManager.MenuLocations.Clear();
+                GameMenu.SwitchToMenu(MENU_FACTION_DIPLOMACY_ID);
+            }
+            else
+            {
+                DisplayInfoMsg("You are already at war with this faction");
+            }
         }
 
         private void selectActionQuitConsequence(MenuCallbackArgs args)
