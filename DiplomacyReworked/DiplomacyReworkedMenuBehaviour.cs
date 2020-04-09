@@ -22,6 +22,9 @@ namespace DiplomacyReworked
         private const string MENU_ID = "diplomacy";
         private const string MENU_BUTTON_TITLE = "Diplomacy";
         private const string MENU_TEXT = "Select a Kingdom to negotiate";
+        private const string MENU_FACTION_DIPLOMACY_ID = "faction_diplomacy";
+        private const string MENU_FACTION_DIPLOMACY_TEXT = "What do you want to do?";
+        private IFaction currentSelectedFaction = null;
 
 
 
@@ -48,7 +51,7 @@ namespace DiplomacyReworked
 
             campaignGameStarter.AddGameMenu(MENU_ID, MENU_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
 
-          
+
             string factionName = "";
             int currentMaxIndex = 0;
             foreach (IFaction faction in Campaign.Current.Factions.ToList())
@@ -60,7 +63,17 @@ namespace DiplomacyReworked
                     currentMaxIndex++;
                 }
             }
-            campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "quit", "Return to Menu", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectMenuQuitConsequence), false, currentMaxIndex, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "quit", "Return to Menu", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectMenuQuitConsequence), false, -1, isRepeatable);
+
+            campaignGameStarter.AddGameMenu(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
+
+            campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "quit", "Return to Selection", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectActionQuitConsequence), false, -1, isRepeatable);
+
+        }
+
+        private void selectActionQuitConsequence(MenuCallbackArgs args)
+        {
+            GameMenu.SwitchToMenu(MENU_ID);
         }
 
         private void selectMenuQuitConsequence(MenuCallbackArgs args)
@@ -81,7 +94,20 @@ namespace DiplomacyReworked
         }
         private void selectMenuConsequence(MenuCallbackArgs args)
         {
-            DisplayInfoMsg(args.MenuTitle.ToString());
+            foreach (IFaction faction in Campaign.Current.Factions.ToList())
+            {
+                if (faction.Name.ToString() == args.Text.ToString())
+                {
+                    this.currentSelectedFaction = faction;
+                    GameMenu.SwitchToMenu(MENU_FACTION_DIPLOMACY_ID);
+                    DisplayInfoMsg(faction.Name.ToString());
+                    break;
+                }
+            }
+            if(this.currentSelectedFaction.Name.ToString() == "")
+            {
+                DisplayInfoMsg("Something went wrong selecting your faction");
+            }
         }
 
         // Debug Method to display all factions
@@ -105,8 +131,6 @@ namespace DiplomacyReworked
 
         private void menuConsequence(MenuCallbackArgs args)
         {
-
-            //BarterManager.Instance.InitializeMakePeaceBarterContext(new PeaceBarterable(Hero.MainHero,Hero.MainHero,Hero.MainHero.OwnedParties.First(),Hero.MainHero.MapFaction,CampaignTime.Now),data,null);
             GameMenu.SwitchToMenu(MENU_ID);
         }
 
