@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Barterables;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace DiplomacyReworked
 {
@@ -40,6 +42,7 @@ namespace DiplomacyReworked
             campaignGameStarter.AddGameMenuOption(MENU_TOWN_KEY, MENU_ID+MENU_TOWN_KEY, MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), false, MENU_TOWN_INSERT_INDEX, false);
             campaignGameStarter.AddGameMenuOption(MENU_CASTLE_KEY, MENU_ID + MENU_CASTLE_KEY, MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), false, MENU_CASTLE_INSERT_INDEX, false);
 
+
             campaignGameStarter.AddGameMenu(MENU_ID, MENU_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
         }
 
@@ -50,7 +53,8 @@ namespace DiplomacyReworked
 
         private void menuConsequence(MenuCallbackArgs args)
         {
-            InformationManager.DisplayMessage(new InformationMessage("Placeholder Text"));
+            
+            //BarterManager.Instance.InitializeMakePeaceBarterContext(new PeaceBarterable(Hero.MainHero,Hero.MainHero,Hero.MainHero.OwnedParties.First(),Hero.MainHero.MapFaction,CampaignTime.Now),data,null);
             GameMenu.SwitchToMenu(MENU_ID);
         }
 
