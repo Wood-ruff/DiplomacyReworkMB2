@@ -9,6 +9,7 @@ using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
 using TaleWorlds.CampaignSystem.Barterables;
+using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Barter;
 
 namespace DiplomacyReworked
 {
@@ -21,7 +22,6 @@ namespace DiplomacyReworked
         private const string MENU_ID = "diplomacy";
         private const string MENU_BUTTON_TITLE = "Diplomacy";
         private const string MENU_TEXT = "Select a Kingdom to negotiate";
-
 
         public override void RegisterEvents()
         {
@@ -70,15 +70,48 @@ namespace DiplomacyReworked
             PartyBase offererParty = PartyBase.MainParty;
             MobileParty otherParty = other.PartyBelongedTo;
 
-
             // BarterData 
             //PeaceBarterable barterable =  PeaceBarterable(Hero.MainHero, enemyFactions.ElementAt(0).Leader, enemyFactions.ElementAt(0), null);
             CampaignTime duration = CampaignTime.Days(Campaign.Current.CampaignDt);
             PeaceBarterable barterable = new PeaceBarterable(owner, other, offererParty, enemyFactions.ElementAt(0), duration);
-            barterable.Apply();
-            // BarterData data = new BarterData(owner, other, offererParty, otherParty);
+            // barterable.Apply();
 
-            // BarterManager.Instance.InitializeMakePeaceBarterContext(barterable, data, null);
+            BarterData data = new BarterData(owner, other, offererParty, (otherParty != null) ? otherParty.Party : null);
+
+            try
+            {
+                // IAsyncResult result;
+                // AsyncCallback callback = new AsyncCallback(demo);
+                // BarterManager.Instance.BarterBegin.BeginInvoke(data, callback, null);
+
+                BarterManager.Instance.StartBarterOffer(other, owner, (otherParty != null) ? otherParty.Party : null, offererParty);
+
+                BarterManager.Instance.InitializeMakePeaceBarterContext(barterable, data, null);
+                Campaign.Current.BarterManager.BeginNewBarter(data);
+                // CampaignMission.Current.SetMissionMode(MissionMode.Barter, false);
+                BarterManager.Instance.ExecuteAIBarter(data, owner.MapFaction, other.MapFaction, owner, other);
+            }
+            catch (Exception e)
+            {
+                DisplayInfoMsg(e.Message);
+                DisplayInfoMsg(e.StackTrace);
+            }
+
+            
+
+
+            // BarterManager.Instance.InitializeMakePeaceBarterContext(barterable, data, null);            
+            // Campaign.Current.BarterManager.BeginNewBarter(data);
+            // CampaignMission.Current.SetMissionMode(MissionMode.Barter, false);
+
+            
+
+            // BarterManager.Instance.ExecuteAIBarter(data, owner.MapFaction, other.MapFaction, owner, other);
+
+            // BarterItemVisualWidget();
+            // Campaign.Current.BarterManager.ExecuteAiBarter(enemyFactions.ElementAt(0), owner.MapFaction, other, owner, barterable);
+
+
             //BarterManager.Instance.StartBarterOffer(other, owner, (otherParty != null) ? otherParty.Party : null, offererParty);
             //enemyFactions.ElementAt(0).Leader
         }
