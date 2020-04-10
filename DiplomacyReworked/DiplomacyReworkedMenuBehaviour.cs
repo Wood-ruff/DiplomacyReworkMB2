@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,11 +12,14 @@ using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
+using TaleWorlds.CampaignSystem.ViewModelCollection;
 
 namespace DiplomacyReworked
 {
     class DiplomacyReworkedMenuBehaviour : CampaignBehaviorBase
     {
+        private const string LOGGING_PATH = "./DiplomacyReworked.txt";
+
         private const int MENU_TOWN_INSERT_INDEX = 5;
         private const int MENU_CASTLE_INSERT_INDEX = 3;
         private const string MENU_TOWN_KEY = "town";
@@ -118,7 +122,7 @@ namespace DiplomacyReworked
 
             Hero owner = Hero.MainHero;
             Hero other = this.currentSelectedFaction.Leader;
-         
+
 
             PartyBase offererParty = PartyBase.MainParty;
             MobileParty otherParty = other.PartyBelongedTo;
@@ -127,9 +131,21 @@ namespace DiplomacyReworked
             //PeaceBarterable barterable =  PeaceBarterable(Hero.MainHero, enemyFactions.ElementAt(0).Leader, enemyFactions.ElementAt(0), null);
             CampaignTime duration = CampaignTime.Days(Campaign.Current.CampaignDt);
             PeaceBarterable barterable = new PeaceBarterable(owner, other, offererParty, this.currentSelectedFaction, duration);
-            barterable.Initialize(new DefaultsBarterGroup(),false);
+            BarterData data = new BarterData(owner, other, offererParty, other.OwnedParties.First());
+
+
+            barterable.Initialize(new DefaultsBarterGroup(), false);
             barterable.Apply();
-            
+            try
+            {
+                BarterManager.Instance.BarterBegin(data);
+            }
+            catch (Exception e)
+            {
+            }
+
+
+
             // BarterManager.Instance.BarterBegin(new BarterData(owner,other,offererParty,this.currentSelectedFaction.Leader.OwnedParties.First()));
             // BarterData data = new BarterData(owner, other, offererParty, otherParty);
 
@@ -138,6 +154,26 @@ namespace DiplomacyReworked
             //enemyFactions.ElementAt(0).Leader
         }
 
+        private void logString(String log)
+        {
+            if (!File.Exists(LOGGING_PATH))
+            {
+                System.IO.File.WriteAllText("./log.txt", log);
+            }
+            else
+            {
+                System.IO.StreamWriter file = new System.IO.StreamWriter(LOGGING_PATH, true);
+                file.Write(log);
+            }
+        }
+
+
+        private void logArray(IEnumerable<String> logs)
+        {
+            foreach (String log in logs){
+                logString(log);
+            }
+        }
         private void selectActionQuitConsequence(MenuCallbackArgs args)
         {
             GameMenu.SwitchToMenu(MENU_ID);
