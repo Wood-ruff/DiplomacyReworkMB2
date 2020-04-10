@@ -67,9 +67,29 @@ namespace DiplomacyReworked
             campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "quit", "Return to Menu", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectMenuQuitConsequence), false, -1, isRepeatable);
 
             campaignGameStarter.AddGameMenu(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
+            campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "peace", "Negotiate Peace", new GameMenuOption.OnConditionDelegate(selectActionPeaceCondition), new GameMenuOption.OnConsequenceDelegate(selectActionPeaceConsequence), false, -1, isRepeatable);
             campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "war", "Declare War", new GameMenuOption.OnConditionDelegate(selectActionWarCondition), new GameMenuOption.OnConsequenceDelegate(selectActionWarConsequence), false, -1, isRepeatable);
             campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "quit", "Return to Selection", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectActionQuitConsequence), false, -1, isRepeatable);
 
+        }
+
+        private void selectActionPeaceConsequence(MenuCallbackArgs args)
+        {
+            if (Hero.MainHero.MapFaction.IsAtWarWith(this.currentSelectedFaction))
+            {
+                attemptPeaceBarter(args);
+                Campaign.Current.GameMenuManager.MenuLocations.Clear();
+                GameMenu.SwitchToMenu(MENU_FACTION_DIPLOMACY_ID);
+            }
+            else
+            {
+                DisplayInfoMsg("You are already at peace with this faction");
+            }
+        }
+
+        private bool selectActionPeaceCondition(MenuCallbackArgs args)
+        {
+            return Hero.MainHero.MapFaction.IsAtWarWith(this.currentSelectedFaction);
         }
 
         private bool selectActionWarCondition(MenuCallbackArgs args)
@@ -89,6 +109,33 @@ namespace DiplomacyReworked
             {
                 DisplayInfoMsg("You are already at war with this faction");
             }
+        }
+
+        // Debug method to attempt to do a barter with an enemy kingdom
+        private void attemptPeaceBarter(MenuCallbackArgs args)
+        {
+            List<IFaction> enemyFactions = FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).ToList();
+
+            Hero owner = Hero.MainHero;
+            Hero other = this.currentSelectedFaction.Leader;
+         
+
+            PartyBase offererParty = PartyBase.MainParty;
+            MobileParty otherParty = other.PartyBelongedTo;
+
+            // BarterData 
+            //PeaceBarterable barterable =  PeaceBarterable(Hero.MainHero, enemyFactions.ElementAt(0).Leader, enemyFactions.ElementAt(0), null);
+            CampaignTime duration = CampaignTime.Days(Campaign.Current.CampaignDt);
+            PeaceBarterable barterable = new PeaceBarterable(owner, other, offererParty, this.currentSelectedFaction, duration);
+            barterable.Initialize(new DefaultsBarterGroup(),false);
+            barterable.Apply();
+            
+            // BarterManager.Instance.BarterBegin(new BarterData(owner,other,offererParty,this.currentSelectedFaction.Leader.OwnedParties.First()));
+            // BarterData data = new BarterData(owner, other, offererParty, otherParty);
+
+            // BarterManager.Instance.InitializeMakePeaceBarterContext(barterable, data, null);
+            //BarterManager.Instance.StartBarterOffer(other, owner, (otherParty != null) ? otherParty.Party : null, offererParty);
+            //enemyFactions.ElementAt(0).Leader
         }
 
         private void selectActionQuitConsequence(MenuCallbackArgs args)
@@ -124,7 +171,7 @@ namespace DiplomacyReworked
                     break;
                 }
             }
-            if(this.currentSelectedFaction.Name.ToString() == "")
+            if (this.currentSelectedFaction.Name.ToString() == "")
             {
                 DisplayInfoMsg("Something went wrong selecting your faction");
             }
