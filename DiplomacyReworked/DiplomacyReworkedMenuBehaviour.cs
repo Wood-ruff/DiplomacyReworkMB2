@@ -18,7 +18,7 @@ namespace DiplomacyReworked
 {
     class DiplomacyReworkedMenuBehaviour : CampaignBehaviorBase
     {
-        private const string LOGGING_PATH = "./DiplomacyReworked.txt";
+        private const string LOGGING_PATH = "./DiplomacyReworkedLog.txt";
 
         private const int MENU_TOWN_INSERT_INDEX = 5;
         private const int MENU_CASTLE_INSERT_INDEX = 3;
@@ -125,46 +125,50 @@ namespace DiplomacyReworked
 
 
             PartyBase offererParty = PartyBase.MainParty;
-            MobileParty otherParty = other.PartyBelongedTo;
+            PartyBase otherParty = other.OwnedParties.First();
 
-            // BarterData 
-            //PeaceBarterable barterable =  PeaceBarterable(Hero.MainHero, enemyFactions.ElementAt(0).Leader, enemyFactions.ElementAt(0), null);
-            CampaignTime duration = CampaignTime.Days(Campaign.Current.CampaignDt);
-            PeaceBarterable barterable = new PeaceBarterable(owner, other, offererParty, this.currentSelectedFaction, duration);
-            BarterData data = new BarterData(owner, other, offererParty, other.OwnedParties.First());
-
-
+            /*
+            CampaignTime duration = CampaignTime.Days(200);
+            Campaign.Current.BarterManager.BarterBegin = barterBeginDelegate;
+            PeaceBarterable barterable = new PeaceBarterable(owner,other, offererParty, this.currentSelectedFaction, duration);
             barterable.Initialize(new DefaultsBarterGroup(), false);
             barterable.Apply();
+            BarterData data = new BarterData(other, owner, offererParty, other.OwnedParties.First(), new BarterManager.BarterContextInitializer(initializer), 0,false);
+            */
             try
             {
-                BarterManager.Instance.BarterBegin(data);
+                Campaign.Current.CampaignMissionManager.OpenConversationMission(new ConversationCharacterData(owner.CharacterObject), new ConversationCharacterData(other.CharacterObject));
             }
             catch (Exception e)
             {
+                DisplayInfoMsg("Error");
+                logString(e.ToString());
             }
-
-
-
-            // BarterManager.Instance.BarterBegin(new BarterData(owner,other,offererParty,this.currentSelectedFaction.Leader.OwnedParties.First()));
-            // BarterData data = new BarterData(owner, other, offererParty, otherParty);
-
-            // BarterManager.Instance.InitializeMakePeaceBarterContext(barterable, data, null);
-            //BarterManager.Instance.StartBarterOffer(other, owner, (otherParty != null) ? otherParty.Party : null, offererParty);
-            //enemyFactions.ElementAt(0).Leader
         }
+
+        private void barterBeginDelegate(BarterData args)
+        {
+            
+        }
+
+        private void printAllParties(Hero hero)
+        {
+            foreach(PartyBase party in hero.OwnedParties)
+            {
+                DisplayInfoMsg(party.Name.ToString());
+            }
+        }
+
+        private bool initializer(Barterable barterable, BarterData args, object obj)
+        {
+            return true;
+        }
+
 
         private void logString(String log)
         {
-            if (!File.Exists(LOGGING_PATH))
-            {
-                System.IO.File.WriteAllText("./log.txt", log);
-            }
-            else
-            {
-                System.IO.StreamWriter file = new System.IO.StreamWriter(LOGGING_PATH, true);
-                file.Write(log);
-            }
+                System.IO.File.WriteAllText(@LOGGING_PATH, log);
+
         }
 
 
