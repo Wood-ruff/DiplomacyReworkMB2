@@ -13,6 +13,7 @@ using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
+using TaleWorlds.CampaignSystem.Election;
 
 namespace DiplomacyReworked
 {
@@ -30,6 +31,7 @@ namespace DiplomacyReworked
         private const string MENU_FACTION_DIPLOMACY_ID = "faction_diplomacy";
         private const string MENU_FACTION_DIPLOMACY_TEXT = "What do you want to do?";
         private IFaction currentSelectedFaction = null;
+        bool isdeciding = false;
 
 
         public override void RegisterEvents()
@@ -38,7 +40,27 @@ namespace DiplomacyReworked
                  this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(
                 this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
+
+            CampaignEvents.KingdomDecisionAdded.AddNonSerializedListener(this, onDecisionDelegate);
+            CampaignEvents.HeroRelationChanged.AddNonSerializedListener(this, onRelationChangedDelegate);
         }
+
+        private void onDecisionDelegate(KingdomDecision arg1, bool arg2)
+        {
+            DisplayInfoMsg(arg1.GetGeneralTitle().ToString());
+        }
+
+        private void onRelationChangedDelegate(Hero arg1, Hero arg2, int arg3, bool arg4)
+        {
+            DisplayInfoMsg("arg1:" + arg1.Name.ToString());
+            DisplayInfoMsg("arg2:" + arg2.Name.ToString());
+            if(isdeciding == true)
+            {
+                arg2.SetPersonalRelation(arg1, arg2.GetRelation(arg1) + arg3);
+            }
+        }
+
+
 
         public void OnAfterNewGameCreated(CampaignGameStarter campaignGameStarter)
         {
