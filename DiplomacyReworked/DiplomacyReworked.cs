@@ -12,7 +12,7 @@ namespace DiplomacyReworked
 {
     public class Main : MBSubModuleBase
     {
-        public override void OnCampaignStart(Game game, object starterObject)
+     /*   public override void OnCampaignStart(Game game, object starterObject)
         {
             AddBehaviors(game, (CampaignGameStarter)starterObject);
         }
@@ -20,6 +20,11 @@ namespace DiplomacyReworked
         public override void OnGameLoaded(Game game, object initializerObject)
         {
             AddBehaviors(game, (CampaignGameStarter)initializerObject);
+        }
+        */
+        protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
+        {
+            AddBehaviors(game, (CampaignGameStarter)gameStarterObject);
         }
 
         private void AddBehaviors(Game game, CampaignGameStarter gameInitializer)
