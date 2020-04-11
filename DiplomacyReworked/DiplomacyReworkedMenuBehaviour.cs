@@ -10,7 +10,6 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Barterables;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
-using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
@@ -148,30 +147,30 @@ namespace DiplomacyReworked
 
         private void barterBeginDelegate(BarterData args)
         {
-            
+
         }
 
         private void printAllParties(Hero hero)
         {
-            foreach(PartyBase party in hero.OwnedParties)
+            foreach (PartyBase party in hero.OwnedParties)
             {
                 DisplayInfoMsg(party.Name.ToString());
             }
         }
 
-        }
 
 
         private void logString(String log)
         {
-                System.IO.File.WriteAllText(@LOGGING_PATH, log);
+            System.IO.File.WriteAllText(@LOGGING_PATH, log);
 
         }
 
 
         private void logArray(IEnumerable<String> logs)
         {
-            foreach (String log in logs){
+            foreach (String log in logs)
+            {
                 logString(log);
             }
         }
