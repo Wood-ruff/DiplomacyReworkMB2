@@ -32,7 +32,6 @@ namespace DiplomacyReworked
         private const string MENU_FACTION_DIPLOMACY_ID = "faction_diplomacy";
         private const string MENU_FACTION_DIPLOMACY_TEXT = "What do you want to do?";
         private IFaction currentSelectedFaction = null;
-        List<int> decisions = new List<int>();
 
         public override void RegisterEvents()
         {
@@ -42,6 +41,7 @@ namespace DiplomacyReworked
                 this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
             CampaignEvents.KingdomDecisionConcluded.AddNonSerializedListener(this, onDecisionConcludedDelegat);
         }
+
 
         private void onDecisionConcludedDelegat(KingdomDecision arg1, DecisionOutcome arg2, bool arg3)
         {
@@ -187,13 +187,6 @@ namespace DiplomacyReworked
         }
 
 
-        private void logArray(IEnumerable<String> logs)
-        {
-            foreach (String log in logs)
-            {
-                logString(log);
-            }
-        }
         private void selectActionQuitConsequence(MenuCallbackArgs args)
         {
             GameMenu.SwitchToMenu(MENU_ID);
