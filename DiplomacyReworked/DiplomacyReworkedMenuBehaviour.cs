@@ -31,7 +31,7 @@ namespace DiplomacyReworked
         private const string MENU_FACTION_DIPLOMACY_ID = "faction_diplomacy";
         private const string MENU_FACTION_DIPLOMACY_TEXT = "What do you want to do?";
         private IFaction currentSelectedFaction = null;
-        bool isdeciding = false;
+        int decisions = 0;
 
 
         public override void RegisterEvents()
@@ -54,9 +54,10 @@ namespace DiplomacyReworked
         {
             DisplayInfoMsg("arg1:" + arg1.Name.ToString());
             DisplayInfoMsg("arg2:" + arg2.Name.ToString());
-            if(isdeciding == true)
+            if(decisions > 0)
             {
                 arg2.SetPersonalRelation(arg1, arg2.GetRelation(arg1) + arg3);
+                decisions--;
             }
         }
 
