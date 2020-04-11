@@ -70,7 +70,7 @@ namespace DiplomacyReworked
             campaignGameStarter.AddGameMenuOption(MENU_ID, MENU_ID + "quit", "Return to Menu", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectMenuQuitConsequence), false, -1, isRepeatable);
 
             campaignGameStarter.AddGameMenu(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithCharacters);
-            campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "peace", "Negotiate Peace", new GameMenuOption.OnConditionDelegate(selectActionPeaceCondition), new GameMenuOption.OnConsequenceDelegate(selectActionPeaceConsequence), false, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "conversation", "Enter Conversation", new GameMenuOption.OnConditionDelegate(selectActionPeaceCondition), new GameMenuOption.OnConsequenceDelegate(selectActionPeaceConsequence), false, -1, isRepeatable);
             campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "war", "Declare War", new GameMenuOption.OnConditionDelegate(selectActionWarCondition), new GameMenuOption.OnConsequenceDelegate(selectActionWarConsequence), false, -1, isRepeatable);
             campaignGameStarter.AddGameMenuOption(MENU_FACTION_DIPLOMACY_ID, MENU_FACTION_DIPLOMACY_ID + "quit", "Return to Selection", new GameMenuOption.OnConditionDelegate(selectMenuCondition), new GameMenuOption.OnConsequenceDelegate(selectActionQuitConsequence), false, -1, isRepeatable);
 
@@ -78,21 +78,19 @@ namespace DiplomacyReworked
 
         private void selectActionPeaceConsequence(MenuCallbackArgs args)
         {
-            if (Hero.MainHero.MapFaction.IsAtWarWith(this.currentSelectedFaction))
+            if(!this.currentSelectedFaction.Leader.IsDead || !this.currentSelectedFaction.Leader.IsPrisoner)
             {
-                attemptPeaceBarter(args);
-                Campaign.Current.GameMenuManager.MenuLocations.Clear();
-                GameMenu.SwitchToMenu(MENU_FACTION_DIPLOMACY_ID);
+                this.startConversation(args);
             }
             else
             {
-                DisplayInfoMsg("You are already at peace with this faction");
+                DisplayInfoMsg("This Factions Leader is currently either dead, or someone took him prisoner");
             }
         }
 
         private bool selectActionPeaceCondition(MenuCallbackArgs args)
         {
-            return Hero.MainHero.MapFaction.IsAtWarWith(this.currentSelectedFaction);
+            return true;
         }
 
         private bool selectActionWarCondition(MenuCallbackArgs args)
@@ -115,7 +113,7 @@ namespace DiplomacyReworked
         }
 
         // Debug method to attempt to do a barter with an enemy kingdom
-        private void attemptPeaceBarter(MenuCallbackArgs args)
+        private void startConversation(MenuCallbackArgs args)
         {
             List<IFaction> enemyFactions = FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).ToList();
 
@@ -126,14 +124,6 @@ namespace DiplomacyReworked
             PartyBase offererParty = PartyBase.MainParty;
             PartyBase otherParty = other.OwnedParties.First();
 
-            /*
-            CampaignTime duration = CampaignTime.Days(200);
-            Campaign.Current.BarterManager.BarterBegin = barterBeginDelegate;
-            PeaceBarterable barterable = new PeaceBarterable(owner,other, offererParty, this.currentSelectedFaction, duration);
-            barterable.Initialize(new DefaultsBarterGroup(), false);
-            barterable.Apply();
-            BarterData data = new BarterData(other, owner, offererParty, other.OwnedParties.First(), new BarterManager.BarterContextInitializer(initializer), 0,false);
-            */
             try
             {
                 Campaign.Current.CampaignMissionManager.OpenConversationMission(new ConversationCharacterData(owner.CharacterObject), new ConversationCharacterData(other.CharacterObject));
@@ -143,11 +133,6 @@ namespace DiplomacyReworked
                 DisplayInfoMsg("Error");
                 logString(e.ToString());
             }
-        }
-
-        private void barterBeginDelegate(BarterData args)
-        {
-
         }
 
         private void printAllParties(Hero hero)
