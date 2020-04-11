@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Barterables;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
@@ -30,7 +31,6 @@ namespace DiplomacyReworked
         private const string MENU_FACTION_DIPLOMACY_ID = "faction_diplomacy";
         private const string MENU_FACTION_DIPLOMACY_TEXT = "What do you want to do?";
         private IFaction currentSelectedFaction = null;
-
 
 
         public override void RegisterEvents()
@@ -159,9 +159,6 @@ namespace DiplomacyReworked
             }
         }
 
-        private bool initializer(Barterable barterable, BarterData args, object obj)
-        {
-            return true;
         }
 
 
