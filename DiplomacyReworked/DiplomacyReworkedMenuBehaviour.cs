@@ -14,6 +14,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.CampaignSystem.Election;
+using TaleWorlds.Library;
 
 namespace DiplomacyReworked
 {
@@ -31,8 +32,7 @@ namespace DiplomacyReworked
         private const string MENU_FACTION_DIPLOMACY_ID = "faction_diplomacy";
         private const string MENU_FACTION_DIPLOMACY_TEXT = "What do you want to do?";
         private IFaction currentSelectedFaction = null;
-        int decisions = 0;
-
+        List<int> decisions = new List<int>();
 
         public override void RegisterEvents()
         {
@@ -40,28 +40,40 @@ namespace DiplomacyReworked
                  this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(
                 this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
-
-            CampaignEvents.KingdomDecisionAdded.AddNonSerializedListener(this, onDecisionDelegate);
-            CampaignEvents.HeroRelationChanged.AddNonSerializedListener(this, onRelationChangedDelegate);
+            CampaignEvents.KingdomDecisionConcluded.AddNonSerializedListener(this, onDecisionConcludedDelegat);
         }
 
-        private void onDecisionDelegate(KingdomDecision arg1, bool arg2)
+        private void onDecisionConcludedDelegat(KingdomDecision arg1, DecisionOutcome arg2, bool arg3)
         {
-            DisplayInfoMsg(arg1.GetGeneralTitle().ToString());
-        }
-
-        private void onRelationChangedDelegate(Hero arg1, Hero arg2, int arg3, bool arg4)
-        {
-            DisplayInfoMsg("arg1:" + arg1.Name.ToString());
-            DisplayInfoMsg("arg2:" + arg2.Name.ToString());
-            if(decisions > 0)
+            float mayority = 0;
+            foreach (DecisionOutcome outcome in arg1.DetermineInitialCandidates().ToList())
             {
-                arg2.SetPersonalRelation(arg1, arg2.GetRelation(arg1) + arg3);
-                decisions--;
+                if (outcome.Support > mayority) mayority = outcome.Support;
+            }
+
+            if (arg2.Support >= mayority)
+            {
+                if (arg1 is TaleWorlds.CampaignSystem.Election.SettlementClaimantDecision)
+                {
+                    if (arg1.DetermineChooser() == Hero.MainHero.Clan)
+                    {
+                        foreach (Clan clan in arg1.Kingdom.Clans)
+                        {
+                            int change = (int)arg1.CalculateRelationshipEffectWithSponsor(clan);
+                            if (change < 0)
+                            {
+                                clan.Leader.SetPersonalRelation(Hero.MainHero, (int)clan.Leader.GetRelationWithPlayer() + (change * -1));
+                                /*if(Hero.MainHero.MapFaction.IsKingdomFaction)
+                                {
+                                    Kingdom kingdom = Hero.MainHero.MapFaction as Kingdom;
+                                    kingdom.
+                                }*/
+                            }
+                        }
+                    }
+                }
             }
         }
-
-
 
         public void OnAfterNewGameCreated(CampaignGameStarter campaignGameStarter)
         {
@@ -101,7 +113,7 @@ namespace DiplomacyReworked
 
         private void selectActionPeaceConsequence(MenuCallbackArgs args)
         {
-            if(!this.currentSelectedFaction.Leader.IsDead || !this.currentSelectedFaction.Leader.IsPrisoner)
+            if (!this.currentSelectedFaction.Leader.IsDead || !this.currentSelectedFaction.Leader.IsPrisoner)
             {
                 this.startConversation(args);
             }
