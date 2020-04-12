@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
-using System.Collections.Generic;
+
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -11,18 +9,15 @@ using TaleWorlds.CampaignSystem.Barterables;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
-using TaleWorlds.Localization;
-using TaleWorlds.CampaignSystem.ViewModelCollection;
+
 using TaleWorlds.CampaignSystem.Election;
-using TaleWorlds.Library;
+
 
 namespace DiplomacyReworked
 {
     class DiplomacyReworkedMenuBehaviour : CampaignBehaviorBase
     {
         private const string LOGGING_PATH = "./DiplomacyReworkedLog.txt";
-
-        CampaignGameStarter starter = null;
         //diplo
         private const int MENU_TOWN_INSERT_INDEX = 5;
         private const int MENU_CASTLE_INSERT_INDEX = 3;
@@ -102,7 +97,6 @@ namespace DiplomacyReworked
             try
             {
                 AddGameMenus(campaignGameStarter);
-                this.starter = campaignGameStarter;
             }
             catch (Exception e)
             {
@@ -283,7 +277,7 @@ namespace DiplomacyReworked
 
         private bool innerDiplomacyCondition(MenuCallbackArgs args)
         {
-            return (!Hero.MainHero.Clan.Settlements.IsEmpty() && Hero.MainHero.MapFaction.IsKingdomFaction);
+            return (Hero.MainHero.MapFaction != null && Hero.MainHero.MapFaction.IsKingdomFaction);
         }
 
         private void selectActionPeaceConsequence(MenuCallbackArgs args)
