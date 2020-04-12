@@ -45,7 +45,7 @@ namespace DiplomacyReworked
 
         private const string KEEP_FIEF_MENU_ID = "keep_fief_menu";
         private const string KEEP_FIEF_MENU_TEXT = "Do you wish to keep the fief or let it be passed by vote?";
-  
+
 
 
         private SettlementClaimantDecision currentdecision;
@@ -71,11 +71,12 @@ namespace DiplomacyReworked
             if (arg1 is TaleWorlds.CampaignSystem.Election.SettlementClaimantDecision)
             {
                 SettlementClaimantDecision decision = arg1 as SettlementClaimantDecision;
+                DisplayInfoMsg(decision.Settlement.LastAttackerParty.Leader.Name.ToString());
                 if (Hero.MainHero.MapFaction is Kingdom)
                 {
-                    if (decision.Kingdom == Hero.MainHero.MapFaction && decision.Settlement.OwnerClan == Hero.MainHero.Clan)
+                    if (decision.Kingdom == Hero.MainHero.MapFaction && decision.Settlement.LastAttackerParty.Leader.Name.ToString() == Hero.MainHero.Name.ToString())
                     {
-                        InformationManager.ShowInquiry(new InquiryData("Fief captured", KEEP_FIEF_MENU_TEXT, true, true, "Keep", "Pass",new Action(FiefKeepConfirmedAction), new Action(FiefKeepDeniedAction)));
+                        InformationManager.ShowInquiry(new InquiryData("Fief captured", KEEP_FIEF_MENU_TEXT, true, true, "Keep", "Pass", new Action(FiefKeepConfirmedAction), new Action(FiefKeepDeniedAction)));
                         this.currentdecision = decision;
                     }
                 }
@@ -91,6 +92,8 @@ namespace DiplomacyReworked
         private void FiefKeepConfirmedAction()
         {
             Campaign.Current.RemoveDecision(this.currentdecision);
+            FiefBarterable fief = new FiefBarterable(this.currentdecision.Settlement, Hero.MainHero.MapFaction.Leader, Hero.MainHero.MapFaction.Leader.OwnedParties.First(), Hero.MainHero);
+            fief.Apply();
             Campaign.Current.GameMenuManager.MenuLocations.Clear();
             this.currentdecision = null;
         }
@@ -258,9 +261,9 @@ namespace DiplomacyReworked
                     }
                 }
                 if (found == null) { DisplayInfoMsg("Error, could not find chosen fief"); return; }
-                // FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, this.currentSelectedClan.Leader);
+                //FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, this.currentSelectedClan.Leader);
 
-                FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, found.OwnerClan.Leader.OwnedParties.First(), found.OwnerClan.Leader);
+                FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, found.OwnerClan.Leader.OwnedParties.First(), this.currentSelectedClan.Leader);
 
                 giftedFief.Apply();
                 if (found.IsCastle)
