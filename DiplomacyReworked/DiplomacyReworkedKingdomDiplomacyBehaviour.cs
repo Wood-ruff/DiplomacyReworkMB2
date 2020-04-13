@@ -21,7 +21,7 @@ namespace DiplomacyReworked
     class DiplomacyReworkedKingdomDiplomacyBehaviour : CampaignBehaviorBase
     {
         Clan currentSelectedClan = null;
-
+        public DataHub currentHub;
         //Initializers
         public override void RegisterEvents()
         {

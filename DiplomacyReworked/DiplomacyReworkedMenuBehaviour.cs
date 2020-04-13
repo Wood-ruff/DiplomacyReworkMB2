@@ -21,6 +21,7 @@ namespace DiplomacyReworked
     class DiplomacyReworkedMenuBehaviour : CampaignBehaviorBase
     { 
         private IFaction currentSelectedFaction = null;
+        public DataHub currentHub;
 
 
         public override void RegisterEvents()

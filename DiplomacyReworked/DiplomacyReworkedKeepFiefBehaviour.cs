@@ -20,6 +20,7 @@ namespace DiplomacyReworked
     class DiplomacyReworkedKeepFiefBehaviour : CampaignBehaviorBase
     {
         SettlementClaimantDecision currentDecision = null;
+        public DataHub currentHub;
 
         public override void RegisterEvents()
         {
