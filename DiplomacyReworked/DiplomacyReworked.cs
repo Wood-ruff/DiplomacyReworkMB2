@@ -44,6 +44,8 @@ namespace DiplomacyReworked
                 if (game.GameType is Campaign)
                 {
                     gameInitializer.AddBehavior(new DiplomacyReworkedMenuBehaviour());
+                    gameInitializer.AddBehavior(new DiplomacyReworkedKingdomDiplomacyBehaviour());
+                    gameInitializer.AddBehavior(new DiplomacyReworkedKeepFiefBehaviour());
                 }
             }
             catch (Exception e)
