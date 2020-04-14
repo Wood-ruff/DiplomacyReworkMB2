@@ -21,7 +21,8 @@ namespace DiplomacyReworked
     class DiplomacyReworkedKingdomDiplomacyBehaviour : CampaignBehaviorBase
     {
         Clan currentSelectedClan = null;
-        public DataHub currentHub;
+        public DataHub hub;
+        private BasicLoggingUtil logger;
         //Initializers
         public override void RegisterEvents()
         {
@@ -31,6 +32,11 @@ namespace DiplomacyReworked
                 this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
         }
 
+        public DiplomacyReworkedKingdomDiplomacyBehaviour(BasicLoggingUtil logger)
+        {
+            this.logger = logger;
+        }
+       
 
         private void OnAfterNewGameCreated(CampaignGameStarter obj)
         {
@@ -40,7 +46,8 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                DataHub.DisplayInfoMsg("DiplomacyReworked:A critical error occurred when adding KingdomDiplomacy Behaviours");
+                DataHub.DisplayInfoMsg(this.hub.getError("critical_load_diplomacy"));
+                this.logger.logError("DiplomacyReworkedKingdomDiplomacyBehaviour", "OnAfterNewGameCreated", e.StackTrace, null);
             }
         }
 
@@ -48,9 +55,9 @@ namespace DiplomacyReworked
         {
             bool isLeave = false;
             bool isRepeatable = false;
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_TOWN_KEY, DataHub.INNER_DIPLOMACY_OPTION_ID, DataHub.MENU_INNER_DIPLOMACY_TEXT, innerDiplomacyCondition, innerDiplomacyConsequence, isLeave, DataHub.MENU_TOWN_INSERT_INDEX + 1, isRepeatable);
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_CASTLE_KEY, DataHub.INNER_DIPLOMACY_OPTION_ID, DataHub.MENU_INNER_DIPLOMACY_TEXT, innerDiplomacyCondition, innerDiplomacyConsequence, isLeave, DataHub.MENU_CASTLE_INSERT_INDEX + 1, isRepeatable);
-            campaignGameStarter.AddGameMenu(DataHub.MENU_INNER_DIPLOMACY_ID, DataHub.MENU_INNER_DIPLOMACY_TITLE, DataHub.MenuOnInit, GameOverlays.MenuOverlayType.SettlementWithBoth);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_TOWN_KEY, DataHub.INNER_DIPLOMACY_OPTION_ID, this.hub.getStandard("kingdom_diplomacy_title"), innerDiplomacyCondition, innerDiplomacyConsequence, isLeave, DataHub.MENU_TOWN_INSERT_INDEX + 1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_CASTLE_KEY, DataHub.INNER_DIPLOMACY_OPTION_ID, this.hub.getStandard("kingdom_diplomacy_title"), innerDiplomacyCondition, innerDiplomacyConsequence, isLeave, DataHub.MENU_CASTLE_INSERT_INDEX + 1, isRepeatable);
+            campaignGameStarter.AddGameMenu(DataHub.MENU_INNER_DIPLOMACY_ID, this.hub.getStandard("select_clan_text"), DataHub.MenuOnInit, GameOverlays.MenuOverlayType.SettlementWithBoth);
             if (Hero.MainHero.MapFaction is Kingdom)
             {
                 foreach (Clan clan in Campaign.Current.Clans)
@@ -61,15 +68,15 @@ namespace DiplomacyReworked
                     }
                 }
             }
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_INNER_DIPLOMACY_ID, DataHub.MENU_INNER_DIPLOMACY_ID + "quit", "Return to Menu", DataHub.alwaysTrueDelegate, DiplomacyReworkedMenuBehaviour.selectMenuQuitConsequence, true, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_INNER_DIPLOMACY_ID, DataHub.MENU_INNER_DIPLOMACY_ID + "quit", this.hub.getButton("return_menu"), DataHub.alwaysTrueDelegate, DiplomacyReworkedMenuBehaviour.selectMenuQuitConsequence, true, -1, isRepeatable);
 
 
-            campaignGameStarter.AddGameMenu(DataHub.INNER_DIPLOMACY_CLAN_MENU_ID, DataHub.INNER_DIPLOMACY_CLAN_MENU_TITLE, DataHub.MenuOnInit, GameOverlays.MenuOverlayType.SettlementWithBoth);
-            campaignGameStarter.AddGameMenuOption(DataHub.INNER_DIPLOMACY_CLAN_MENU_ID, DataHub.INNER_DIPLOMACY_CLAN_MENU_ID + "giftFief", "Gift this clan a Fief", giftFiefCondition, giftFiefConsequence, isLeave, -1, isRepeatable);
-            campaignGameStarter.AddGameMenuOption(DataHub.INNER_DIPLOMACY_CLAN_MENU_ID, DataHub.INNER_DIPLOMACY_CLAN_MENU_ID + "conversation", "Enter Conversation with the Leader", talkToLeaderCondition, talkToLeaderConsquence, isLeave, -1, isRepeatable);
-            campaignGameStarter.AddGameMenuOption(DataHub.INNER_DIPLOMACY_CLAN_MENU_ID, DataHub.INNER_DIPLOMACY_CLAN_MENU_ID + "quit", "Return to Clans", DataHub.alwaysTrueDelegate, innerDiplomacyClanQuitConsequence, true, -1, isRepeatable);
+            campaignGameStarter.AddGameMenu(DataHub.INNER_DIPLOMACY_CLAN_MENU_ID, this.hub.getStandard("what_to_do"), DataHub.MenuOnInit, GameOverlays.MenuOverlayType.SettlementWithBoth);
+            campaignGameStarter.AddGameMenuOption(DataHub.INNER_DIPLOMACY_CLAN_MENU_ID, DataHub.INNER_DIPLOMACY_CLAN_MENU_ID + "giftFief", this.hub.getButton("gift_fief_clan"), giftFiefCondition, giftFiefConsequence, isLeave, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.INNER_DIPLOMACY_CLAN_MENU_ID, DataHub.INNER_DIPLOMACY_CLAN_MENU_ID + "conversation", this.hub.getButton("conversation_leader"), talkToLeaderCondition, talkToLeaderConsquence, isLeave, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.INNER_DIPLOMACY_CLAN_MENU_ID, DataHub.INNER_DIPLOMACY_CLAN_MENU_ID + "quit", this.hub.getButton("return_clans"), DataHub.alwaysTrueDelegate, innerDiplomacyClanQuitConsequence, true, -1, isRepeatable);
 
-            campaignGameStarter.AddGameMenu(DataHub.INNER_DIPLOMACY_FIEF_MENU_ID, DataHub.INNER_DIPLOMACY_FIEF_MENU_TEXT, DataHub.MenuOnInit, GameOverlays.MenuOverlayType.SettlementWithBoth);
+            campaignGameStarter.AddGameMenu(DataHub.INNER_DIPLOMACY_FIEF_MENU_ID, this.hub.getStandard("which_fief_to_gift"), DataHub.MenuOnInit, GameOverlays.MenuOverlayType.SettlementWithBoth);
 
             foreach (Settlement settlement in Settlement.All)
             {
@@ -80,7 +87,7 @@ namespace DiplomacyReworked
                 }
             }
 
-            campaignGameStarter.AddGameMenuOption(DataHub.INNER_DIPLOMACY_FIEF_MENU_ID, DataHub.INNER_DIPLOMACY_FIEF_MENU_ID + "quit", "Return to Options", DataHub.alwaysTrueDelegate, innerDiplomacyFiefQuitConsequence, isLeave, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.INNER_DIPLOMACY_FIEF_MENU_ID, DataHub.INNER_DIPLOMACY_FIEF_MENU_ID + "quit", this.hub.getButton("return_options"), DataHub.alwaysTrueDelegate, innerDiplomacyFiefQuitConsequence, isLeave, -1, isRepeatable);
         }
 
 
@@ -96,6 +103,7 @@ namespace DiplomacyReworked
 
         private void settlementGiftedConsequence(MenuCallbackArgs args)
         {
+            Dictionary<String, object> values = new Dictionary<string, object>();
             try
             {
                 Settlement found = null;
@@ -107,11 +115,15 @@ namespace DiplomacyReworked
                         break;
                     }
                 }
-                if (found == null) { DataHub.DisplayInfoMsg("Error, could not find chosen fief"); return; }
-                //FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, this.currentSelectedClan.Leader);
+                if (found == null) { DataHub.DisplayInfoMsg(this.hub.getError("chosen_fief_not_found")); return; }
+                values.Add("SettlementName", found.Name.ToString());
+                values.Add("SettlementCastle", found.IsCastle);
+                values.Add("SettlementCity", found.IsTown);
 
-
-                FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, found.OwnerClan.Leader.OwnedParties.First(), this.currentSelectedClan.Leader);
+                values.Add("Owner", found.OwnerClan.Leader.Name);
+                values.Add("Receiver", this.currentSelectedClan.Leader.Name);
+                FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, this.currentSelectedClan.Leader);
+                //FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, found.OwnerClan.Leader.OwnedParties.First(), this.currentSelectedClan.Leader);
                 giftedFief.Apply();
                 if (found.IsCastle)
                 {
@@ -125,7 +137,8 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                DataHub.DisplayInfoMsg("DiplomacyReworked:An Error occurred when gifting a Fief");
+                this.logger.logError("DiplomacyReworkedKingdomDiplomacyBehaviour", "settlementGiftedConsequence", e.StackTrace, values);
+                DataHub.DisplayInfoMsg(this.hub.getError("gift_fief_failed"));
             }
         }
 
@@ -168,7 +181,7 @@ namespace DiplomacyReworked
             }
             else
             {
-                DataHub.DisplayInfoMsg("Error:Could not find the Selected clan");
+                DataHub.DisplayInfoMsg(this.hub.getError("selectedClan_not_found"));
             }
         }
 

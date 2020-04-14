@@ -12,32 +12,23 @@ namespace DiplomacyReworked
 {
     public class Main : MBSubModuleBase
     {
-        /*   public override void OnCampaignStart(Game game, object starterObject)
-           {
-               AddBehaviors(game, (CampaignGameStarter)starterObject);
-           }
-
-           public override void OnGameLoaded(Game game, object initializerObject)
-           {
-               AddBehaviors(game, (CampaignGameStarter)initializerObject);
-           }
-           */
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
             try
             {
                 if(gameStarterObject is CampaignGameStarter)
                 {
-                    AddBehaviors(game, (CampaignGameStarter)gameStarterObject);
+                    AddBehaviours(game, (CampaignGameStarter)gameStarterObject);
                 }
             }
             catch (Exception e)
             {
                 //not loading the mod should the selected mode not be a campaign
+                DataHub.DisplayInfoMsg("DiplomacyReworked: An Error occurred, when trying to load the mod into your current game.");
             }
         }
 
-        private void AddBehaviors(Game game, CampaignGameStarter gameInitializer)
+        private void AddBehaviours(Game game, CampaignGameStarter gameInitializer)
         {
             try
             {
@@ -53,6 +44,7 @@ namespace DiplomacyReworked
             catch (Exception e)
             {
                 //not loading the mod should the Game not be a campaign
+                DataHub.DisplayInfoMsg("DiplomacyReworked: An Error occurred, when trying to load the mod into your current game.");
             }
         }
 

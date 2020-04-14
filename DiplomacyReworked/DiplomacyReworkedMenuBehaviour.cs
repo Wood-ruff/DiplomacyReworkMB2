@@ -21,8 +21,13 @@ namespace DiplomacyReworked
     class DiplomacyReworkedMenuBehaviour : CampaignBehaviorBase
     { 
         private IFaction currentSelectedFaction = null;
-        public DataHub currentHub;
+        public DataHub hub;
+        private BasicLoggingUtil logger;
 
+        public DiplomacyReworkedMenuBehaviour(BasicLoggingUtil logger)
+        {
+            this.logger = logger;
+        }
 
         public override void RegisterEvents()
         {
@@ -31,13 +36,12 @@ namespace DiplomacyReworked
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(
                 this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
             CampaignEvents.KingdomDecisionConcluded.AddNonSerializedListener(this, onDecisionConcludedDelegate);
-            
-
         }
 
 
         private void onDecisionConcludedDelegate(KingdomDecision arg1, DecisionOutcome arg2, bool arg3)
         {
+            Dictionary<String, Object> values = new Dictionary<string, object>();
             try
             {
 
@@ -46,9 +50,11 @@ namespace DiplomacyReworked
                 {
                     if (outcome.Support > mayority) mayority = outcome.Support;
                 }
+                values.Add("mayority", mayority);
 
                 if (arg2.Support >= mayority)
                 {
+                    values.Add("type", arg1.GetType());
                     if (arg1 is TaleWorlds.CampaignSystem.Election.SettlementClaimantDecision)
                     {
                         if (arg1.DetermineChooser() == Hero.MainHero.Clan)
@@ -56,6 +62,8 @@ namespace DiplomacyReworked
                             foreach (Clan clan in arg1.Kingdom.Clans)
                             {
                                 int change = (int)arg1.CalculateRelationshipEffectWithSponsor(clan);
+                                values.Add("change",change);
+                                values.Add("current", clan.Leader.GetRelationWithPlayer());
                                 if (change < 0)
                                 {
                                     clan.Leader.SetPersonalRelation(Hero.MainHero, (int)clan.Leader.GetRelationWithPlayer() + (change * -1));
@@ -67,7 +75,8 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                DisplayInfoMsg("An Error occurred when resetting your relationship");
+                this.logger.logError("DiplomacyReworkedMenuBehaviour", "onDecisionConcludedDelegate", e.StackTrace, values);
+                this.hub.getError("error_setting_relation");
             }
         }
 
@@ -79,8 +88,8 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                DataHub.logString(e.StackTrace);
-                DisplayInfoMsg("DiplomacyReworked: Menus could not be added, an error occured when adding menus.");
+                this.logger.logError("DiplomacyReworkedMenuBehaviour", "OnAfterNewGameCreated", e.StackTrace, null);
+                this.hub.getError("critical_load_Menus");
             }
         }
 
@@ -89,27 +98,27 @@ namespace DiplomacyReworked
             //Adding in menus and buttons for outer diplomacy
             bool isLeave = false;
             bool isRepeatable = false;
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_TOWN_KEY, DataHub.MENU_ID + DataHub.MENU_TOWN_KEY, DataHub.MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, DataHub.MENU_TOWN_INSERT_INDEX, isRepeatable);
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_CASTLE_KEY, DataHub.MENU_ID + DataHub.MENU_CASTLE_KEY, DataHub.MENU_BUTTON_TITLE, new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, DataHub.MENU_CASTLE_INSERT_INDEX, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_TOWN_KEY, DataHub.MENU_ID + DataHub.MENU_TOWN_KEY, this.hub.getStandard("diplomacy_title"), new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, DataHub.MENU_TOWN_INSERT_INDEX, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_CASTLE_KEY, DataHub.MENU_ID + DataHub.MENU_CASTLE_KEY, this.hub.getStandard("diplomacy_title"), new GameMenuOption.OnConditionDelegate(menuCondition), new GameMenuOption.OnConsequenceDelegate(menuConsequence), isLeave, DataHub.MENU_CASTLE_INSERT_INDEX, isRepeatable);
 
-            campaignGameStarter.AddGameMenu(DataHub.MENU_ID, DataHub.MENU_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithBoth);
+            campaignGameStarter.AddGameMenu(DataHub.MENU_ID, this.hub.getStandard("select_kingdom"), new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithBoth);
             string factionName = "";
             int currentMaxIndex = 0;
             foreach (IFaction faction in Campaign.Current.Factions.ToList())
-            {
-                if (faction.IsKingdomFaction && faction != Hero.MainHero.MapFaction && faction.Name.ToString() != "Return")
+            {  
+                if (faction.IsKingdomFaction && faction != Hero.MainHero.MapFaction)
                 {
                     factionName = faction.Name.ToString();
                     campaignGameStarter.AddGameMenuOption(DataHub.MENU_ID, DataHub.MENU_ID + factionName, factionName, KingdomDisplayDelegate, selectMenuConsequence, isLeave, currentMaxIndex, isRepeatable);
                     currentMaxIndex++;
                 }
             }
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_ID, DataHub.MENU_ID + "quit", "Return to Menu", alwaystrueDelegate, selectMenuQuitConsequence, isLeave, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_ID, DataHub.MENU_ID + "quit", this.hub.getButton("return_menu"), alwaystrueDelegate, selectMenuQuitConsequence, isLeave, -1, isRepeatable);
 
-            campaignGameStarter.AddGameMenu(DataHub.MENU_FACTION_DIPLOMACY_ID, DataHub.MENU_FACTION_DIPLOMACY_TEXT, new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithBoth);
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_FACTION_DIPLOMACY_ID, DataHub.MENU_FACTION_DIPLOMACY_ID + "conversation", "Enter Conversation", selectActionPeaceCondition, selectActionPeaceConsequence, isLeave, -1, isRepeatable);
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_FACTION_DIPLOMACY_ID, DataHub.MENU_FACTION_DIPLOMACY_ID + "war", "Declare War", selectActionWarCondition, selectActionWarConsequence, isLeave, -1, isRepeatable);
-            campaignGameStarter.AddGameMenuOption(DataHub.MENU_FACTION_DIPLOMACY_ID, DataHub.MENU_FACTION_DIPLOMACY_ID + "quit", "Return to Selection", alwaystrueDelegate, selectActionQuitConsequence, true, -1, isRepeatable);
+            campaignGameStarter.AddGameMenu(DataHub.MENU_FACTION_DIPLOMACY_ID, this.hub.getStandard("what_to_do"), new OnInitDelegate(MenuOnInit), GameOverlays.MenuOverlayType.SettlementWithBoth);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_FACTION_DIPLOMACY_ID, DataHub.MENU_FACTION_DIPLOMACY_ID + "conversation", this.hub.getButton("conversation_leader"), selectActionPeaceCondition, selectActionPeaceConsequence, isLeave, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_FACTION_DIPLOMACY_ID, DataHub.MENU_FACTION_DIPLOMACY_ID + "war", this.hub.getButton("declare_war"), selectActionWarCondition, selectActionWarConsequence, isLeave, -1, isRepeatable);
+            campaignGameStarter.AddGameMenuOption(DataHub.MENU_FACTION_DIPLOMACY_ID, DataHub.MENU_FACTION_DIPLOMACY_ID + "quit", this.hub.getButton("return_selection"), alwaystrueDelegate, selectActionQuitConsequence, true, -1, isRepeatable);
         }
 
         private bool KingdomDisplayDelegate(MenuCallbackArgs args)
@@ -137,7 +146,7 @@ namespace DiplomacyReworked
             }
             else
             {
-                DisplayInfoMsg("This Factions Leader is currently either dead, or someone took him prisoner");
+                DataHub.DisplayInfoMsg("This Factions Leader is currently either dead, or someone took him prisoner");
             }
         }
 
@@ -270,6 +279,21 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
+                Dictionary<String, Object> values = new Dictionary<string, object>();
+                values.Add("player",player.Name.ToString());
+                if(other != null)
+                {
+                values.Add("Other", other.Name);
+                    values.Add("OtherIsPrisoner", other.IsPrisoner);
+                    values.Add("OtherIsDead", other.IsDead);
+                    values.Add("OtherIsOccupied", other.IsOccupiedByAnEvent());
+                }
+                else
+                {
+                    values.Add("Other", "Isnull");
+                }
+                BasicLoggingUtil logger = new BasicLoggingUtil();
+                logger.logError("DiplomacyReworkedMenuBehaviour", "startConversation", e.StackTrace,values);
                 DataHub.DisplayInfoMsg("An Error occurred when initializing the conversation");
             }
         }

@@ -20,16 +20,26 @@ namespace DiplomacyReworked
     class DiplomacyReworkedKeepFiefBehaviour : CampaignBehaviorBase
     {
         SettlementClaimantDecision currentDecision = null;
-        public DataHub currentHub;
+        public DataHub hub;
+        private BasicLoggingUtil logger;
+
+        public DiplomacyReworkedKeepFiefBehaviour(BasicLoggingUtil logger)
+        {
+            this.logger = logger;
+        }
 
         public override void RegisterEvents()
         {
-            CampaignEvents.KingdomDecisionAdded.AddNonSerializedListener(this, onDecisionAdded);
+            if (SettingsReader.getKeepFiefOn() == "1")
+            {
+                CampaignEvents.KingdomDecisionAdded.AddNonSerializedListener(this, onDecisionAdded);
+            }
         }
 
         //Listeners
         private void onDecisionAdded(KingdomDecision arg1, bool arg2)
         {
+            Dictionary<String, object> values = new Dictionary<string, object>();
             try
             {
                 if (arg1 is TaleWorlds.CampaignSystem.Election.SettlementClaimantDecision)
@@ -38,11 +48,15 @@ namespace DiplomacyReworked
                     if (decision.Settlement.LastAttackerParty != null)
                     {
                         Hero lastAttacker = decision.Settlement.LastAttackerParty.Leader.HeroObject;
+                    values.Add("LastAttacker", decision.Settlement.LastAttackerParty.Name.ToString());
                         if (Hero.MainHero.MapFaction is Kingdom)
                         {
+                            values.Add("HeroName", Hero.MainHero.Name.ToString());
+                            values.Add("HeroMapFaction", Hero.MainHero.MapFaction.Name.ToString());
+                            values.Add("HeroMapFactionisKingdom", Hero.MainHero.MapFaction.IsKingdomFaction.ToString());
                             if (decision.Kingdom == Hero.MainHero.MapFaction && lastAttacker.Name.ToString() == Hero.MainHero.Name.ToString())
                             {
-                                InformationManager.ShowInquiry(new InquiryData("Fief captured", DataHub.KEEP_FIEF_MENU_TEXT + DataHub.KEEP_FIEF_SETTLEMENT + " " + decision.Settlement.Name.ToString(), true, true, "Keep", "Pass", fiefKeepConfirmedAction, fiefKeepDeniedAction));
+                                InformationManager.ShowInquiry(new InquiryData(this.hub.getStandard("fief_captured_title"), this.hub.getStandard("fief_keep_pass_text") + "\n" + this.hub.getStandard("settlement_name") + " " + decision.Settlement.Name.ToString(), true, true, this.hub.getButton("button_keep"), this.hub.getButton("button_pass"), fiefKeepConfirmedAction, fiefKeepDeniedAction));
                                 this.currentDecision = decision;
                             }
                         }
@@ -51,8 +65,11 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                DataHub.DisplayInfoMsg("DiplomacyReworked:A Critical Error occurred when redistributing the Fief, continueing as defined by main game");
+                DataHub.DisplayInfoMsg(this.hub.getError("redistribute_fief_failed"));
+
+                this.logger.logError("DiplomacyReworkedKeepFiefBehaviour", "OnDecisionAdded", e.StackTrace, values);
             }
+            values = null;
         }
 
         //Consequences
@@ -65,8 +82,8 @@ namespace DiplomacyReworked
         private void fiefKeepConfirmedAction()
         {
             Campaign.Current.RemoveDecision(this.currentDecision);
-            //FiefBarterable fief = new FiefBarterable(this.currentdecision.Settlement, Hero.MainHero.MapFaction.Leader,Hero.MainHero);
-            FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, this.currentDecision.Settlement.OwnerClan.Leader, this.currentDecision.Settlement.OwnerClan.Leader.OwnedParties.First(), Hero.MainHero);
+            FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, Hero.MainHero.MapFaction.Leader,Hero.MainHero);
+            //FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, this.currentDecision.Settlement.OwnerClan.Leader, this.currentDecision.Settlement.OwnerClan.Leader.OwnedParties.First(), Hero.MainHero);
             fief.Apply();
             Campaign.Current.GameMenuManager.MenuLocations.Clear();
             this.currentDecision = null;

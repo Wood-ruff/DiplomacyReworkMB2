@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+  <Language>English</Language>
+  <supportsVersion>1.2.3</supportsVersion>
+  <ErrorMessages>
+    <critical_loading_mod>DiplomacyReworked: A critical Error occurred, when trying to load the mod into your current game.</critical_loading_mod>
+    <critical_load_diplomacy>DiplomacyReworked:A critical Error occurred when adding KingdomDiplomacy Behaviours</critical_load_diplomacy>
+    <critical_load_Menus>DiplomacyReworked: A critical Error occurred when adding Diplomacy Behaviours</critical_load_Menus>
+    <redistribute_fief_failed>DiplomacyReworked: An Error occurred when redistributing the Fief, continueing as defined by main game</redistribute_fief_failed>
+    <chosen_fief_not_found>DiplomacyReworked: Error, could not find chosen fief</chosen_fief_not_found>
+    <gift_fief_failed>DiplomacyReworked:An Error occurred when gifting a Fief</gift_fief_failed>
+    <selectedClan_not_found>DiplomacyReworked: Error, could not find the Selected clan</selectedClan_not_found>
+    <error_setting_relation>DiplomacyReworked: Error, could not reset your relationship</error_setting_relation>
+    <select_faction_failed>DiplomacyReworked: Error, something went wrong selecting your faction</select_faction_failed>
+    <conversation_failed>DiplomacyReworked: An Error occurred when initializing the conversation</conversation_failed>
+    <leader_dead_prison>This Factions Leader is currently either dead, or someone took him prisoner</leader_dead_prison>
+    <already_war>You are already at war with this faction</already_war>
+  </ErrorMessages>
+  <Standard>
+    <diplomacy_title>Diplomacy</diplomacy_title>
+    <select_kingdom>Select a Kingdom to interact</select_kingdom>
+    <what_to_do>What do you want to do</what_to_do>
+    <kingdom_diplomacy_title>Kingdom Diplomacy</kingdom_diplomacy_title>
+    <select_clan_text>Select a Clan to interact</select_clan_text>
+    <which_fief_to_gift>Which Fief do you want to gift?</which_fief_to_gift>
+    <fief_captured_title>Fief captured</fief_captured_title>
+    <fief_keep_pass_text>Do you wish to keep the fief or let it be passed by vote</fief_keep_pass_text>
+    <settlement_name>Settlement name:</settlement_name>
+  </Standard>
+  <Buttons>
+    <button_keep>Keep</button_keep>
+    <button_pass>Pass</button_pass>
+    <return_options>Return to options</return_options>
+    <conversation_leader>Enter conversation with leader</conversation_leader>
+    <gift_fief_clan>Gift this clan a Fief</gift_fief_clan>
+    <return_menu>Return to Menu</return_menu>
+    <return_selection>Return to Selection</return_selection>
+    <declare_war>Declare War</declare_war>
+    <return_clans>Return to clans</return_clans>
+  </Buttons>
+</root>

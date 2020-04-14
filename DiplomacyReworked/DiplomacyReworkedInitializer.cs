@@ -15,13 +15,14 @@ namespace DiplomacyReworked
 
         public DiplomacyReworkedInitializer()
         {
-            this.dataHub = new DataHub();
-            this.keepFiefBehaviour = new DiplomacyReworkedKeepFiefBehaviour();
-            this.kingdomDiplomacyBehaviour = new DiplomacyReworkedKingdomDiplomacyBehaviour();
-            this.menuBehaviour = new DiplomacyReworkedMenuBehaviour();
-            this.keepFiefBehaviour.currentHub = this.dataHub;
-            this.kingdomDiplomacyBehaviour.currentHub = this.dataHub;
-            this.menuBehaviour.currentHub = this.dataHub;
+            BasicLoggingUtil logger = new BasicLoggingUtil();
+            this.dataHub = new DataHub(logger);
+            this.keepFiefBehaviour = new DiplomacyReworkedKeepFiefBehaviour(logger);
+            this.kingdomDiplomacyBehaviour = new DiplomacyReworkedKingdomDiplomacyBehaviour(logger);
+            this.menuBehaviour = new DiplomacyReworkedMenuBehaviour(logger);
+            this.keepFiefBehaviour.hub = this.dataHub;
+            this.kingdomDiplomacyBehaviour.hub = this.dataHub;
+            this.menuBehaviour.hub = this.dataHub;
         }
 
     }

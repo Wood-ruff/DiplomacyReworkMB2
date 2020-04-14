@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+  <Language>Deutsch</Language>
+  <supportsVersion>1.2.3</supportsVersion>
+  <ErrorMessages>
+    <critical_loading_mod>DiplomacyReworked: Ein kritischer Fehler ist während des ladens aufgetreten.</critical_loading_mod>
+    <critical_load_diplomacy>DiplomacyReworked: Ein kritischer Fehler ist aufgetreten, während das Innenpolitik-Modul geladen wurde</critical_load_diplomacy>
+    <critical_load_Menus>DiplomacyReworked: Ein kritischer Fehler ist aufgetreten, während das Diplomatie-Modul geladen wurde</critical_load_Menus>
+    <redistribute_fief_failed>DiplomacyReworked: Ein Fehler trat auf, als eine befestigte Anlage verteilt werden sollte, fahre standardmäßig fort</redistribute_fief_failed>
+    <chosen_fief_not_found>DiplomacyReworked: Fehler, die gewählte befestigte Anlage konnte nicht gefunden werden </chosen_fief_not_found>
+    <gift_fief_failed>DiplomacyReworked: Ein Fehler trat beim verschenken der befestigte Anlage auf</gift_fief_failed>
+    <selectedClan_not_found>DiplomacyReworked: Fehler, der ausgewählt Clan konnte nicht gefunden werden</selectedClan_not_found>
+    <error_setting_relation>DiplomacyReworked: Ein Fehler ist beim zurücksetzen der Beziehungen aufgetreten</error_setting_relation>
+    <select_faction_failed>DiplomacyReworked: Fehler, die gewählt Fraktion konnte nicht gefunden werden</select_faction_failed>
+    <conversation_failed>DiplomacyReworked: Ein Fehler trat beim initialisieren der Konversation auf</conversation_failed>
+    <leader_dead_prison>Dieser Anführer ist aktuell entweder tot, oder ein Gefangener</leader_dead_prison>
+    <already_war>Du bist bereits im Krieg mit dieser Fraktion</already_war>
+  </ErrorMessages>
+  <Standard>
+    <diplomacy_title>Diplomatie</diplomacy_title>
+    <select_kingdom>Wähle ein Königreich zum interagieren aus</select_kingdom>
+    <what_to_do>Was möchtest du tun</what_to_do>
+    <kingdom_diplomacy_title>Innenpolitik</kingdom_diplomacy_title>
+    <select_clan_text>Wähle einen Clan zum interagieren aus</select_clan_text>
+    <which_fief_to_gift>Welche befestigte Anlage möchtest du verschenken?</which_fief_to_gift>
+    <fief_captured_title>Befestigung eingenommen!</fief_captured_title>
+    <fief_keep_pass_text>Möchtest du die befestigte Anlage behalten, oder sie zur Wahl weiterreichen?</fief_keep_pass_text>
+    <settlement_name>Name der Befestigung:</settlement_name>
+  </Standard>
+  <Buttons>
+    <button_keep>Behalten</button_keep>
+    <button_pass>Weitergeben</button_pass>
+    <return_options>Zurück zu Optionen</return_options>
+    <conversation_leader>Unterhaltung mit dem Anführer</conversation_leader>
+    <gift_fief_clan>Diesem Clan ein Geschenk machen</gift_fief_clan>
+    <return_menu>Zurück zum Menü</return_menu>
+    <return_selection>Zurück zur Auswahl</return_selection>
+    <declare_war>Krieg erklären</declare_war>
+    <return_clans>Zurück zu Clans</return_clans>
+  </Buttons>
+</root>

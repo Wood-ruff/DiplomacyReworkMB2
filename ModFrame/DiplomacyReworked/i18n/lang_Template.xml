@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+  <Language>Template</Language>
+  <supportsVersion>1.2.3</supportsVersion>
+  <ErrorMessages>
+    <critical_loading_mod></critical_loading_mod>
+    <critical_load_diplomacy></critical_load_diplomacy>
+    <critical_load_Menus></critical_load_Menus>
+    <redistribute_fief_failed></redistribute_fief_failed>
+    <chosen_fief_not_found></chosen_fief_not_found>
+    <gift_fief_failed></gift_fief_failed>
+    <selectedClan_not_found></selectedClan_not_found>
+    <error_setting_relation></error_setting_relation>
+    <select_faction_failed></select_faction_failed>
+    <conversation_failed></conversation_failed>
+    <leader_dead_prison></leader_dead_prison>
+    <already_war></already_war>
+  </ErrorMessages>
+  <Standard>
+    <diplomacy_title></diplomacy_title>
+    <select_kingdom></select_kingdom>
+    <what_to_do></what_to_do>
+    <kingdom_diplomacy_title></kingdom_diplomacy_title>
+    <select_clan_text></select_clan_text>
+    <which_fief_to_gift></which_fief_to_gift>
+    <fief_captured_title></fief_captured_title>
+    <fief_keep_pass_text></fief_keep_pass_text>
+    <settlement_name></settlement_name>
+  </Standard>
+  <Buttons>
+    <button_keep></button_keep>
+    <button_pass></button_pass>
+    <return_options></return_options>
+    <conversation_leader></conversation_leader>
+    <gift_fief_clan></gift_fief_clan>
+    <return_menu></return_menu>
+    <return_selection></return_selection>
+    <declare_war></declare_war>
+    <return_clans></return_clans>
+  </Buttons>
+</root>
