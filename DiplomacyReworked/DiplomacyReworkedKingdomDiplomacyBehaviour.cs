@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.Library;
 using TaleWorlds.CampaignSystem.Barterables;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
-using TaleWorlds.InputSystem;
-using System.Threading.Tasks;
+
 
 using TaleWorlds.CampaignSystem.Election;
 
@@ -32,8 +28,9 @@ namespace DiplomacyReworked
                 this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
         }
 
-        public DiplomacyReworkedKingdomDiplomacyBehaviour(BasicLoggingUtil logger)
+        public DiplomacyReworkedKingdomDiplomacyBehaviour(BasicLoggingUtil logger,DataHub hub)
         {
+            this.hub = hub;
             this.logger = logger;
         }
        
@@ -47,7 +44,7 @@ namespace DiplomacyReworked
             catch (Exception e)
             {
                 DataHub.DisplayInfoMsg(this.hub.getError("critical_load_diplomacy"));
-                this.logger.logError("DiplomacyReworkedKingdomDiplomacyBehaviour", "OnAfterNewGameCreated", e.StackTrace, null);
+                this.logger.logError("DiplomacyReworkedKingdomDiplomacyBehaviour", "OnAfterNewGameCreated", e.StackTrace, null,e);
             }
         }
 
@@ -122,8 +119,8 @@ namespace DiplomacyReworked
 
                 values.Add("Owner", found.OwnerClan.Leader.Name);
                 values.Add("Receiver", this.currentSelectedClan.Leader.Name);
-                FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, this.currentSelectedClan.Leader);
-                //FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, found.OwnerClan.Leader.OwnedParties.First(), this.currentSelectedClan.Leader);
+                //FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, this.currentSelectedClan.Leader);
+                FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, found.OwnerClan.Leader.OwnedParties.First(), this.currentSelectedClan.Leader);
                 giftedFief.Apply();
                 if (found.IsCastle)
                 {
@@ -137,7 +134,7 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                this.logger.logError("DiplomacyReworkedKingdomDiplomacyBehaviour", "settlementGiftedConsequence", e.StackTrace, values);
+                this.logger.logError("DiplomacyReworkedKingdomDiplomacyBehaviour", "settlementGiftedConsequence", e.StackTrace, values,e);
                 DataHub.DisplayInfoMsg(this.hub.getError("gift_fief_failed"));
             }
         }

@@ -43,7 +43,7 @@ namespace DiplomacyReworked
             }
         }
         
-        public void logError(String origin,String function,String stacktrace,Dictionary<string,Object> values)
+        public void logError(String origin,String function,String stacktrace,Dictionary<string,Object> values,Exception e = null)
         {
             this.log("Error at " + origin.ToString() + " in function " + function);
             this.log("With stacktrace :\n" + stacktrace);
@@ -54,6 +54,10 @@ namespace DiplomacyReworked
                 {
                     this.log(key + ":" + values[key].ToString());
                 }
+            }
+            if(e != null)
+            {
+                this.log("With Message: "+e.Message);
             }
             this.log("----------------------------------------------------");
         }

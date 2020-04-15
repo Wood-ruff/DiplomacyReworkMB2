@@ -35,5 +35,18 @@ namespace DiplomacyReworked
                 return "1";
             }
         }
+
+        public static int getWarCoolDown()
+        {
+            try
+            {
+                XDocument cooldown = XDocument.Parse(File.ReadAllText("./../../Modules/DiplomacyReworked/Settings.xml"));
+                return Int32.Parse(cooldown.Root.Element("ConversationCooldown").Value.ToString());
+            }
+            catch (Exception e)
+            {
+                return 5;
+            }
+        }
     }
 }

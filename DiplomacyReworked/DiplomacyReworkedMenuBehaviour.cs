@@ -5,13 +5,10 @@ using System.Collections.Generic;
 
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.Library;
-using TaleWorlds.CampaignSystem.Barterables;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
-using TaleWorlds.InputSystem;
-using System.Threading.Tasks;
+
 
 using TaleWorlds.CampaignSystem.Election;
 
@@ -24,8 +21,9 @@ namespace DiplomacyReworked
         public DataHub hub;
         private BasicLoggingUtil logger;
 
-        public DiplomacyReworkedMenuBehaviour(BasicLoggingUtil logger)
+        public DiplomacyReworkedMenuBehaviour(BasicLoggingUtil logger,DataHub hub)
         {
+            this.hub = hub;
             this.logger = logger;
         }
 
@@ -75,7 +73,7 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                this.logger.logError("DiplomacyReworkedMenuBehaviour", "onDecisionConcludedDelegate", e.StackTrace, values);
+                this.logger.logError("DiplomacyReworkedMenuBehaviour", "onDecisionConcludedDelegate", e.StackTrace, values,e);
                 this.hub.getError("error_setting_relation");
             }
         }
@@ -88,7 +86,7 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                this.logger.logError("DiplomacyReworkedMenuBehaviour", "OnAfterNewGameCreated", e.StackTrace, null);
+                this.logger.logError("DiplomacyReworkedMenuBehaviour", "OnAfterNewGameCreated", e.StackTrace, null,e);
                 this.hub.getError("critical_load_Menus");
             }
         }
@@ -152,7 +150,7 @@ namespace DiplomacyReworked
 
         private bool selectActionPeaceCondition(MenuCallbackArgs args)
         {
-            return true;
+            return !this.hub.isPlayerOnCooldown(this.currentSelectedFaction);
         }
 
         private bool selectActionWarCondition(MenuCallbackArgs args)
@@ -245,10 +243,6 @@ namespace DiplomacyReworked
         {
             return true;
         }
-        private bool canNegotiatePeace(MenuCallbackArgs args)
-        {
-            return !FactionManager.GetEnemyFactions(Hero.MainHero.MapFaction).IsEmpty();
-        }
 
         private void MenuOnInit(MenuCallbackArgs args)
         {
@@ -293,7 +287,7 @@ namespace DiplomacyReworked
                     values.Add("Other", "Isnull");
                 }
                 BasicLoggingUtil logger = new BasicLoggingUtil();
-                logger.logError("DiplomacyReworkedMenuBehaviour", "startConversation", e.StackTrace,values);
+                logger.logError("DiplomacyReworkedMenuBehaviour", "startConversation", e.StackTrace,values,e);
                 DataHub.DisplayInfoMsg("An Error occurred when initializing the conversation");
             }
         }

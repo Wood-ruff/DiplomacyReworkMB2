@@ -39,9 +39,11 @@ namespace DiplomacyReworked
         XDocument currentLang = null;
 
         String selectedLang = "English";
+        List<WarCooldownDataModell> warCoolDown;
 
         public DataHub(BasicLoggingUtil logger)
         {
+            this.warCoolDown = new List<WarCooldownDataModell>();
             this.logger = logger;
             this.selectedLang = SettingsReader.getLang();
             this.languages = new List<XDocument>();
@@ -68,6 +70,47 @@ namespace DiplomacyReworked
             {
                 this.currentLang = languages[0];
             }
+        }
+
+        public void passDayCoolDowns()
+        {
+            try
+            {
+                List<WarCooldownDataModell> runOutCds = new List<WarCooldownDataModell>();
+                foreach (WarCooldownDataModell cooldown in this.warCoolDown)
+                {
+                    if (cooldown.dayPassed()){
+                        runOutCds.Add(cooldown);
+                    }
+                }
+
+                foreach (WarCooldownDataModell runout in runOutCds)
+                {
+                    this.warCoolDown.Remove(runout);
+                }
+
+            }
+            catch (Exception e)
+            {
+                logger.logError("DataHub", "passDayCooldown", e.StackTrace, null, e);
+            }
+        }
+
+        public bool isPlayerOnCooldown(IFaction relatedFaction)
+        {
+            foreach (WarCooldownDataModell data in this.warCoolDown)
+            {
+                if (data.containsFaction(relatedFaction) && data.isPlayerRelated)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void newWarDeclared(WarCooldownDataModell data)
+        {
+            this.warCoolDown.Add(data);
         }
 
         public string getError(String key)

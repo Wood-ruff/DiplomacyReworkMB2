@@ -23,8 +23,9 @@ namespace DiplomacyReworked
         public DataHub hub;
         private BasicLoggingUtil logger;
 
-        public DiplomacyReworkedKeepFiefBehaviour(BasicLoggingUtil logger)
+        public DiplomacyReworkedKeepFiefBehaviour(BasicLoggingUtil logger,DataHub hub)
         {
+            this.hub = hub;
             this.logger = logger;
         }
 
@@ -48,7 +49,7 @@ namespace DiplomacyReworked
                     if (decision.Settlement.LastAttackerParty != null)
                     {
                         Hero lastAttacker = decision.Settlement.LastAttackerParty.Leader.HeroObject;
-                    values.Add("LastAttacker", decision.Settlement.LastAttackerParty.Name.ToString());
+                        values.Add("LastAttacker", decision.Settlement.LastAttackerParty.Name.ToString());
                         if (Hero.MainHero.MapFaction is Kingdom)
                         {
                             values.Add("HeroName", Hero.MainHero.Name.ToString());
@@ -67,7 +68,7 @@ namespace DiplomacyReworked
             {
                 DataHub.DisplayInfoMsg(this.hub.getError("redistribute_fief_failed"));
 
-                this.logger.logError("DiplomacyReworkedKeepFiefBehaviour", "OnDecisionAdded", e.StackTrace, values);
+                this.logger.logError("DiplomacyReworkedKeepFiefBehaviour", "OnDecisionAdded", e.StackTrace, values,e);
             }
             values = null;
         }
@@ -81,12 +82,25 @@ namespace DiplomacyReworked
 
         private void fiefKeepConfirmedAction()
         {
-            Campaign.Current.RemoveDecision(this.currentDecision);
-            FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, Hero.MainHero.MapFaction.Leader,Hero.MainHero);
-            //FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, this.currentDecision.Settlement.OwnerClan.Leader, this.currentDecision.Settlement.OwnerClan.Leader.OwnedParties.First(), Hero.MainHero);
-            fief.Apply();
-            Campaign.Current.GameMenuManager.MenuLocations.Clear();
-            this.currentDecision = null;
+            Dictionary<String, object> values = new Dictionary<string, object>();
+            try
+            {
+                Campaign.Current.RemoveDecision(this.currentDecision);
+                values.Add("SettlementName", this.currentDecision.Settlement.Name);
+                values.Add("SettlementPossessor", this.currentDecision.Settlement.OwnerClan.Name);
+                values.Add("HeroFactionIsKingdom",Hero.MainHero.MapFaction.IsKingdomFaction);
+                values.Add("HeroFaction", Hero.MainHero.MapFaction.Name);
+                values.Add("Hero", Hero.MainHero.Name);
+                //FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, Hero.MainHero.MapFaction.Leader, Hero.MainHero);
+                FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, this.currentDecision.Settlement.OwnerClan.Leader, this.currentDecision.Settlement.OwnerClan.Leader.OwnedParties.First(), Hero.MainHero);
+                fief.Apply();
+                values.Add("SettlementPossessorAfterTrade", fief.TargetSettlement.OwnerClan.Leader.Name);
+                Campaign.Current.GameMenuManager.MenuLocations.Clear();
+                this.currentDecision = null;
+            }catch(Exception e){
+                DataHub.DisplayInfoMsg("An Error occurred when trying to add fief into players possession");
+                this.logger.logError("DiplomacyReworkedKeepFiefBehaviour", "fiefKeepConfirmedAction", e.StackTrace, values,e);
+            }
         }
         //unused overrides
         public override void SyncData(IDataStore dataStore)

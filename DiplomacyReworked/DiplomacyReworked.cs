@@ -39,6 +39,7 @@ namespace DiplomacyReworked
                     gameInitializer.AddBehavior(init.menuBehaviour);
                     gameInitializer.AddBehavior(init.kingdomDiplomacyBehaviour);
                     gameInitializer.AddBehavior(init.keepFiefBehaviour);
+                    gameInitializer.AddBehavior(init.cdManager);
                 }
             }
             catch (Exception e)
