@@ -119,8 +119,7 @@ namespace DiplomacyReworked
 
                 values.Add("Owner", found.OwnerClan.Leader.Name);
                 values.Add("Receiver", this.currentSelectedClan.Leader.Name);
-                //FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, this.currentSelectedClan.Leader);
-                FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, found.OwnerClan.Leader.OwnedParties.First(), this.currentSelectedClan.Leader);
+                FiefBarterable giftedFief = new FiefBarterable(found, found.OwnerClan.Leader, this.currentSelectedClan.Leader);
                 giftedFief.Apply();
                 if (found.IsCastle)
                 {
@@ -220,7 +219,7 @@ namespace DiplomacyReworked
         }
 
         private bool isSettlementPlayerOwnedDelegate(MenuCallbackArgs args)
-        {
+        { 
             Settlement found = null;
             foreach (Settlement settlement in Settlement.All)
             {
@@ -231,7 +230,7 @@ namespace DiplomacyReworked
                 }
             }
             if (found == null) return false;
-            return found.OwnerClan.Name.ToString() == Hero.MainHero.Clan.Name.ToString();
+            return found.OwnerClan.Name.ToString() == Hero.MainHero.Clan.Name.ToString() && !found.IsUnderSiege;
         }
 
         //unused overrides

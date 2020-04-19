@@ -4,16 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Barterables;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
 using TaleWorlds.Core;
+using TaleWorlds.SaveSystem;
+using static DiplomacyReworked.DataHub;
 
 namespace DiplomacyReworked
 {
     class DiplomacyReworkedCoolDownManagerBehaviour : CampaignBehaviorBase
     {
         int cooldown;
+        int truceDuration;
         DataHub hub;
         BasicLoggingUtil logger;
 
@@ -22,15 +26,25 @@ namespace DiplomacyReworked
             this.hub = hub;
             this.logger = logger;
             this.cooldown = SettingsReader.getWarCoolDown();
+            this.truceDuration = SettingsReader.getStandardTruce();
         }
 
         public override void RegisterEvents()
         {
-            if(this.cooldown > 0)
+            if (this.truceDuration > 0)
+            {
+                CampaignEvents.MakePeace.AddNonSerializedListener(this, onPeaceDeclaredDelegate);
+            }
+            if (this.cooldown > 0)
             {
                 CampaignEvents.WarDeclared.AddNonSerializedListener(this, onWarDeclaredDelegate);
-                CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, dayPassedDelegate);
             }
+            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, dayPassedDelegate);
+        }
+
+        private void onPeaceDeclaredDelegate(IFaction arg1, IFaction arg2)
+        {
+            this.hub.addNewTruce(new WarCooldownDataModell(arg1, arg2, 7));
         }
 
         private void dayPassedDelegate()
@@ -40,67 +54,33 @@ namespace DiplomacyReworked
 
         private void onWarDeclaredDelegate(IFaction arg1, IFaction arg2)
         {
-            this.hub.newWarDeclared(new WarCooldownDataModell(arg1, arg2, this.cooldown));
+            if (this.hub.isFactionOnTruce(arg1, arg2))
+            {
+                try
+                {
+                    CampaignTime duration = CampaignTime.Days(Campaign.Current.CampaignDt);
+                    PeaceBarterable peace = new PeaceBarterable(arg1.Leader, arg2.Leader, arg1.Leader.OwnedParties.First(), arg2.MapFaction, duration);
+                    peace.Apply();
+                    DataHub.DisplayInfoMsg(this.hub.getStandard("war_declared_while_truce"));
+                }
+                catch (Exception e)
+                {
+                    this.logger.logError("DiplomacyReworkedMenuBehaviour", "onWarDeclareDelegate", e.StackTrace, null, e);
+                }
+            }
+            else
+            {
+                this.hub.newWarDeclared(new WarCooldownDataModell(arg1, arg2, this.cooldown));
+            }
         }
 
         public override void SyncData(IDataStore dataStore)
         {
+
         }
     }
 
-    class WarCooldownDataModell
-    {
-        public WarCooldownDataModell(IFaction faction1,IFaction faction2,int totalDays)
-        {
-            this.faction1 = faction1;
-            this.faction2 = faction2;
-            this.remainingDays = totalDays;
-            if (Hero.MainHero.MapFaction.IsKingdomFaction)
-            {
-                if(Hero.MainHero.MapFaction == faction1 || Hero.MainHero.MapFaction == faction2)
-                {
-                    
-                    this.isPlayerRelated = true;
-                }
-                else
-                {
-                    this.isPlayerRelated = false;
-                }
-            }
-            else
-            {
-                this.isPlayerRelated = false;
-            }
-        }
-
-        public bool isPlayerRelated { get; }
-        IFaction faction1 { get; }
-        IFaction faction2 { get; }
-        int remainingDays { get; set; }
-
-
-        public bool dayPassed()
-        {
-            this.remainingDays -= 1;
-            if(this.remainingDays <= 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool containsFaction(IFaction faction)
-        {
-            if(this.faction1 == faction || this.faction2 == faction)
-            {
-                return true;
-            }
-            return false;
-        }
-    }
+    
 }
 
 

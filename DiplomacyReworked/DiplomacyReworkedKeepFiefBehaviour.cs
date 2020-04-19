@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.Actions;
-using TaleWorlds.Library;
+
 using TaleWorlds.CampaignSystem.Barterables;
-using TaleWorlds.CampaignSystem.GameMenus;
-using TaleWorlds.CampaignSystem.Overlay;
+
 using TaleWorlds.Core;
-using TaleWorlds.InputSystem;
+
 
 using TaleWorlds.CampaignSystem.Election;
 
@@ -91,14 +86,13 @@ namespace DiplomacyReworked
                 values.Add("HeroFactionIsKingdom",Hero.MainHero.MapFaction.IsKingdomFaction);
                 values.Add("HeroFaction", Hero.MainHero.MapFaction.Name);
                 values.Add("Hero", Hero.MainHero.Name);
-                //FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, Hero.MainHero.MapFaction.Leader, Hero.MainHero);
-                FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, this.currentDecision.Settlement.OwnerClan.Leader, this.currentDecision.Settlement.OwnerClan.Leader.OwnedParties.First(), Hero.MainHero);
+                FiefBarterable fief = new FiefBarterable(this.currentDecision.Settlement, Hero.MainHero.MapFaction.Leader, Hero.MainHero);
                 fief.Apply();
                 values.Add("SettlementPossessorAfterTrade", fief.TargetSettlement.OwnerClan.Leader.Name);
                 Campaign.Current.GameMenuManager.MenuLocations.Clear();
                 this.currentDecision = null;
             }catch(Exception e){
-                DataHub.DisplayInfoMsg("An Error occurred when trying to add fief into players possession");
+                DataHub.DisplayInfoMsg(this.hub.getError("gift_fief_failed"));
                 this.logger.logError("DiplomacyReworkedKeepFiefBehaviour", "fiefKeepConfirmedAction", e.StackTrace, values,e);
             }
         }

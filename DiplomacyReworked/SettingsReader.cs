@@ -48,5 +48,18 @@ namespace DiplomacyReworked
                 return 5;
             }
         }
+
+        public static int getStandardTruce()
+        {
+            try
+            {
+                XDocument cooldown = XDocument.Parse(File.ReadAllText("./../../Modules/DiplomacyReworked/Settings.xml"));
+                return Int32.Parse(cooldown.Root.Element("TruceStandardDuration").Value.ToString());
+            }
+            catch (Exception e)
+            {
+                return 7;
+            }
+        }
     }
 }

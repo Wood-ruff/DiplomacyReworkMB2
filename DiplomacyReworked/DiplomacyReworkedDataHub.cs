@@ -8,12 +8,14 @@ using System.IO;
 
 using TaleWorlds.Core;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.SaveSystem;
 using System.Xml.Serialization;
 using System.Xml.Linq;
+using static DiplomacyReworked.DataHub;
 
-namespace DiplomacyReworked
+namespace DiplomacyReworked 
 {
-    class DataHub
+    class DataHub : CampaignBehaviorBase
     {
         private BasicLoggingUtil logger = null;
         public const string LOGGING_PATH = "./DiplomacyReworkedLog.txt";
@@ -39,11 +41,15 @@ namespace DiplomacyReworked
         XDocument currentLang = null;
 
         String selectedLang = "English";
+        [SaveableField(15)]
         List<WarCooldownDataModell> warCoolDown;
+        [SaveableField(16)]
+        List<WarCooldownDataModell> currentTruces;
 
         public DataHub(BasicLoggingUtil logger)
         {
             this.warCoolDown = new List<WarCooldownDataModell>();
+            this.currentTruces = new List<WarCooldownDataModell>();
             this.logger = logger;
             this.selectedLang = SettingsReader.getLang();
             this.languages = new List<XDocument>();
@@ -79,7 +85,8 @@ namespace DiplomacyReworked
                 List<WarCooldownDataModell> runOutCds = new List<WarCooldownDataModell>();
                 foreach (WarCooldownDataModell cooldown in this.warCoolDown)
                 {
-                    if (cooldown.dayPassed()){
+                    if (cooldown.dayPassed())
+                    {
                         runOutCds.Add(cooldown);
                     }
                 }
@@ -87,6 +94,20 @@ namespace DiplomacyReworked
                 foreach (WarCooldownDataModell runout in runOutCds)
                 {
                     this.warCoolDown.Remove(runout);
+                }
+
+                runOutCds = new List<WarCooldownDataModell>();
+                foreach (WarCooldownDataModell cooldown in this.currentTruces)
+                {
+                    if (cooldown.dayPassed())
+                    {
+                        runOutCds.Add(cooldown);
+                    }
+                }
+
+                foreach (WarCooldownDataModell runout in runOutCds)
+                {
+                    this.currentTruces.Remove(runout);
                 }
 
             }
@@ -108,9 +129,46 @@ namespace DiplomacyReworked
             return false;
         }
 
+        public int isPlayerOnTruce(IFaction relatedFaction)
+        {
+            foreach (WarCooldownDataModell data in this.currentTruces)
+            {
+                if (data.containsFaction(relatedFaction) && data.isPlayerRelated)
+                {
+                    return data.remainingDays;
+                }
+            }
+            return -1;
+        }
+
+        public bool isFactionOnTruce(IFaction origFaction, IFaction relatedFaction)
+        {
+            foreach (WarCooldownDataModell data in this.currentTruces)
+            {
+                if (data.containsFaction(relatedFaction) && data.containsFaction(origFaction))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public void newWarDeclared(WarCooldownDataModell data)
         {
             this.warCoolDown.Add(data);
+        }
+
+        public void addNewTruce(WarCooldownDataModell data)
+        {
+            foreach(WarCooldownDataModell truce in currentTruces)
+            {
+                if (truce.equals(data)){
+                    truce.addDays(data.remainingDays);
+                    return;
+                }
+            }
+
+            this.currentTruces.Add(data);
         }
 
         public string getError(String key)
@@ -172,5 +230,126 @@ namespace DiplomacyReworked
             System.IO.File.WriteAllText(DataHub.LOGGING_PATH, log);
 
         }
+
+        public override void RegisterEvents()
+        {
+        }
+
+        public override void SyncData(IDataStore dataStore)
+        {
+            try
+            {
+                dataStore.SyncData<List<WarCooldownDataModell>>("warCoolDown", ref this.warCoolDown);
+                dataStore.SyncData<List<WarCooldownDataModell>>("currentTruces", ref this.currentTruces);
+
+            }
+            catch (Exception e)
+            {
+                DisplayInfoMsg(this.getError("error_loading_data"));
+                this.logger.logError("DataHub", "SyncData", e.StackTrace, null, e);
+            }
+
+        }
+    }
+}
+
+[SaveableClass(747942846)]
+public class WarCooldownDataModell
+{
+
+
+    public WarCooldownDataModell(IFaction faction1, IFaction faction2, int totalDays)
+    {
+        this.faction1 = faction1;
+        this.faction2 = faction2;
+        this.remainingDays = totalDays;
+        if (Hero.MainHero.MapFaction.IsKingdomFaction)
+        {
+            if (Hero.MainHero.MapFaction == faction1 || Hero.MainHero.MapFaction == faction2)
+            {
+
+                this.isPlayerRelated = true;
+            }
+            else
+            {
+                this.isPlayerRelated = false;
+            }
+        }
+        else
+        {
+            this.isPlayerRelated = false;
+        }
+    }
+
+    [SaveableProperty(10)]
+    public bool isPlayerRelated { get; set; }
+
+    [SaveableProperty(11)]
+    public IFaction faction1 { get; set; }
+    [SaveableProperty(12)]
+    public IFaction faction2 { get; set; }
+    [SaveableProperty(13)]
+    public int remainingDays { get; set; }
+
+
+    public bool dayPassed()
+    {
+        this.remainingDays -= 1;
+        if (this.remainingDays <= 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    public void addDays(int days)
+    {
+        this.remainingDays += days;
+    }
+
+    public bool containsFaction(IFaction faction)
+    {
+        if (this.faction1 == faction || this.faction2 == faction)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool equals(WarCooldownDataModell model)
+    {
+        bool faction1 = false;
+        bool faction2 = false;
+        if (model.faction1 == this.faction1 || model.faction1 == this.faction2) faction1 = true;
+        if (model.faction2 == this.faction1 || model.faction2 == this.faction2) faction2 = true;
+
+        return faction1 && faction2;
+    }
+
+}
+public class WarCooldownDataModellSaveDefiner : SaveableTypeDefiner
+{
+    public WarCooldownDataModellSaveDefiner() : base(0xdf3229)
+    {
+    }
+
+    protected override void DefineClassTypes()
+    {
+        try
+        {
+            AddClassDefinition(typeof(WarCooldownDataModell), 747942846);
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    protected override void DefineContainerDefinitions()
+    {
+        base.ConstructContainerDefinition(typeof(List<WarCooldownDataModell>));
     }
 }

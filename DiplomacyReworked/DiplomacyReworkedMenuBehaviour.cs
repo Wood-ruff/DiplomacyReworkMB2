@@ -4,6 +4,8 @@ using System.Linq;
 using System.Collections.Generic;
 
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Conversation;
+using TaleWorlds.CampaignSystem.Barterables;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Overlay;
@@ -11,17 +13,17 @@ using TaleWorlds.Core;
 
 
 using TaleWorlds.CampaignSystem.Election;
-
+using System.Threading;
 
 namespace DiplomacyReworked
 {
     class DiplomacyReworkedMenuBehaviour : CampaignBehaviorBase
-    { 
+    {
         private IFaction currentSelectedFaction = null;
         public DataHub hub;
         private BasicLoggingUtil logger;
 
-        public DiplomacyReworkedMenuBehaviour(BasicLoggingUtil logger,DataHub hub)
+        public DiplomacyReworkedMenuBehaviour(BasicLoggingUtil logger, DataHub hub)
         {
             this.hub = hub;
             this.logger = logger;
@@ -33,9 +35,24 @@ namespace DiplomacyReworked
                  this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(
                 this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
-            CampaignEvents.KingdomDecisionConcluded.AddNonSerializedListener(this, onDecisionConcludedDelegate);
+            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, onSessionLaunched);
+            //CampaignEvents.KingdomDecisionConcluded.AddNonSerializedListener(this, onDecisionConcludedDelegate);
         }
 
+        private void onSessionLaunched(CampaignGameStarter obj)
+        {
+            obj.AddPlayerLine("offer_truce_conversation_option", "hero_main_options", "lord_start", this.hub.getStandard("offer_truce_dialog_option"), truceLineCondition, selectTruceActionDelegate);
+        }
+
+        private bool truceLineCondition()
+        {
+            return Hero.OneToOneConversationHero.MapFaction != Hero.MainHero.MapFaction &&Hero.OneToOneConversationHero.IsFactionLeader;
+        }
+
+        private void selectTruceActionDelegate()
+        {
+            selectTruceActionDelegate(null);
+        }
 
         private void onDecisionConcludedDelegate(KingdomDecision arg1, DecisionOutcome arg2, bool arg3)
         {
@@ -60,7 +77,7 @@ namespace DiplomacyReworked
                             foreach (Clan clan in arg1.Kingdom.Clans)
                             {
                                 int change = (int)arg1.CalculateRelationshipEffectWithSponsor(clan);
-                                values.Add("change",change);
+                                values.Add("change", change);
                                 values.Add("current", clan.Leader.GetRelationWithPlayer());
                                 if (change < 0)
                                 {
@@ -73,7 +90,7 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                this.logger.logError("DiplomacyReworkedMenuBehaviour", "onDecisionConcludedDelegate", e.StackTrace, values,e);
+                this.logger.logError("DiplomacyReworkedMenuBehaviour", "onDecisionConcludedDelegate", e.StackTrace, values, e);
                 this.hub.getError("error_setting_relation");
             }
         }
@@ -86,7 +103,7 @@ namespace DiplomacyReworked
             }
             catch (Exception e)
             {
-                this.logger.logError("DiplomacyReworkedMenuBehaviour", "OnAfterNewGameCreated", e.StackTrace, null,e);
+                this.logger.logError("DiplomacyReworkedMenuBehaviour", "OnAfterNewGameCreated", e.StackTrace, null, e);
                 this.hub.getError("critical_load_Menus");
             }
         }
@@ -103,7 +120,7 @@ namespace DiplomacyReworked
             string factionName = "";
             int currentMaxIndex = 0;
             foreach (IFaction faction in Campaign.Current.Factions.ToList())
-            {  
+            {
                 if (faction.IsKingdomFaction && faction != Hero.MainHero.MapFaction)
                 {
                     factionName = faction.Name.ToString();
@@ -119,6 +136,32 @@ namespace DiplomacyReworked
             campaignGameStarter.AddGameMenuOption(DataHub.MENU_FACTION_DIPLOMACY_ID, DataHub.MENU_FACTION_DIPLOMACY_ID + "quit", this.hub.getButton("return_selection"), alwaystrueDelegate, selectActionQuitConsequence, true, -1, isRepeatable);
         }
 
+        private void selectTruceActionDelegate(MenuCallbackArgs args)
+        {
+            //FiefBarterable peace = new FiefBarterable(Hero.MainHero.Clan.Settlements.First(), Hero.MainHero, this.currentSelectedFaction.Leader);
+            //BarterData data = new BarterData(Hero.MainHero, this.currentSelectedFaction.Leader, this.currentSelectedFaction.Leader.OwnedParties.First(), Campaign.Current.MainParty.Party);
+            //    data.AddBarterable<FiefBarterable>(peace);
+
+            try
+            {
+
+                Hero mainHero = Hero.MainHero;
+                Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
+                PartyBase mainParty = PartyBase.MainParty;
+                MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
+                PartyBase otherParty = (partyBelongedTo != null) ? partyBelongedTo.Party : null;
+                Hero beneficiaryOfOtherHero = null;
+                BarterManager.BarterContextInitializer contextInitializer = new BarterManager.BarterContextInitializer(BarterManager.Instance.InitializeMakePeaceBarterContext);
+                Barterable[] array = new Barterable[1];;
+                MobileParty conversationParty = MobileParty.ConversationParty;
+                array[0] = new TruceBarterable(oneToOneConversationHero, otherParty,mainHero.MapFaction as Kingdom,otherParty.MapFaction as Kingdom,this.hub);
+                BarterManager.Instance.StartBarterOffer(mainHero, oneToOneConversationHero, otherParty, mainParty, beneficiaryOfOtherHero, contextInitializer, 0, false, array);
+            }
+            catch (Exception e)
+            {
+                this.logger.logError("DiplomacyReworkedMenuBehaviour", "selectTruceActionDelegate", e.StackTrace, null, e);
+            }
+        }
         private bool KingdomDisplayDelegate(MenuCallbackArgs args)
         {
             Kingdom found = null;
@@ -160,6 +203,20 @@ namespace DiplomacyReworked
 
         private void selectActionWarConsequence(MenuCallbackArgs args)
         {
+            int trucetime = this.hub.isPlayerOnTruce(this.currentSelectedFaction);
+            if (trucetime >= 0)
+            {
+                if(trucetime > 1)
+                {
+                    DataHub.DisplayInfoMsg(this.hub.getStandard("still_at_truce_multiday_1")+ " " +trucetime.ToString()+" " + this.hub.getStandard("still_at_truce_multiday_2"));
+                }
+                else
+                {
+                    DataHub.DisplayInfoMsg(this.hub.getStandard("still_at_truce_singleday"));
+                }
+                return;
+            }
+
             if (!Hero.MainHero.MapFaction.IsAtWarWith(this.currentSelectedFaction))
             {
                 DeclareWarAction.Apply(Hero.MainHero.MapFaction, this.currentSelectedFaction);
@@ -168,7 +225,7 @@ namespace DiplomacyReworked
             }
             else
             {
-                DisplayInfoMsg("You are already at war with this faction");
+                DisplayInfoMsg(this.hub.getError("already_war"));
             }
         }
 
@@ -190,11 +247,6 @@ namespace DiplomacyReworked
             }
         }
 
-
-
-
-
-
         private void selectActionQuitConsequence(MenuCallbackArgs args)
         {
             GameMenu.SwitchToMenu(DataHub.MENU_ID);
@@ -202,6 +254,7 @@ namespace DiplomacyReworked
 
         public static void selectMenuQuitConsequence(MenuCallbackArgs args)
         {
+           
             if (Hero.MainHero.CurrentSettlement.IsTown)
             {
                 GameMenu.SwitchToMenu("town");
@@ -225,7 +278,7 @@ namespace DiplomacyReworked
             }
             if (this.currentSelectedFaction.Name.ToString() == "")
             {
-                DisplayInfoMsg("Something went wrong selecting your faction");
+                DisplayInfoMsg(this.hub.getError("select_faction_failed"));
             }
         }
 
@@ -274,10 +327,10 @@ namespace DiplomacyReworked
             catch (Exception e)
             {
                 Dictionary<String, Object> values = new Dictionary<string, object>();
-                values.Add("player",player.Name.ToString());
-                if(other != null)
+                values.Add("player", player.Name.ToString());
+                if (other != null)
                 {
-                values.Add("Other", other.Name);
+                    values.Add("Other", other.Name);
                     values.Add("OtherIsPrisoner", other.IsPrisoner);
                     values.Add("OtherIsDead", other.IsDead);
                     values.Add("OtherIsOccupied", other.IsOccupiedByAnEvent());
@@ -287,7 +340,7 @@ namespace DiplomacyReworked
                     values.Add("Other", "Isnull");
                 }
                 BasicLoggingUtil logger = new BasicLoggingUtil();
-                logger.logError("DiplomacyReworkedMenuBehaviour", "startConversation", e.StackTrace,values,e);
+                logger.logError("DiplomacyReworkedMenuBehaviour", "startConversation", e.StackTrace, values, e);
                 DataHub.DisplayInfoMsg("An Error occurred when initializing the conversation");
             }
         }
