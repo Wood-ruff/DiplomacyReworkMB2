@@ -9,7 +9,6 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.Localization;
 using TaleWorlds.Core;
 using TaleWorlds.CampaignSystem.SandBox.GameComponents.Map;
-using static DiplomacyReworked.DataHub;
 
 namespace DiplomacyReworked
 {
@@ -48,29 +47,36 @@ namespace DiplomacyReworked
 
         public override int GetUnitValueForFaction(IFaction faction)
         {
-            int value = 0;
-            float fullStrengthPlayer = 0.0f;
-            DefaultDiplomacyModel model = new DefaultDiplomacyModel();
-            foreach (Clan clan in (Hero.MainHero.MapFaction as Kingdom).Clans)
+            try
             {
-                fullStrengthPlayer += model.GetClanStrength(clan);
-            }
-            float fullStrengthOther = 0.0f;
-            foreach (Clan clan in (faction.MapFaction as Kingdom).Clans)
-            {
-                fullStrengthOther += model.GetClanStrength(clan);
-            }
+                int value = -10000;
+                float fullStrengthPlayer = 0.0f;
+                DefaultDiplomacyModel model = new DefaultDiplomacyModel();
+                foreach (Clan clan in (Hero.MainHero.MapFaction as Kingdom).Clans)
+                {
+                    fullStrengthPlayer += model.GetClanStrength(clan);
+                }
+                float fullStrengthOther = 0.0f;
+                foreach (Clan clan in (faction.MapFaction as Kingdom).Clans)
+                {
+                    fullStrengthOther += model.GetClanStrength(clan);
+                }
 
-            value += Convert.ToInt32((fullStrengthPlayer - fullStrengthOther) * 0.03);
-            /*
-            if (Hero.MainHero.MapFaction.IsAtWarWith(faction))
-            {
-                value += Convert.ToInt32(model.GetScoreOfDeclaringPeace(Hero.MainHero.MapFaction, faction));
-            }*/
+                value += Convert.ToInt32((fullStrengthPlayer - fullStrengthOther) * 0.04);
+                /*
+                if (Hero.MainHero.MapFaction.IsAtWarWith(faction))
+                {
+                    value += Convert.ToInt32(model.GetScoreOfDeclaringPeace(Hero.MainHero.MapFaction, faction));
+                }*/
 
-            return value;
+                return value;
+            }
+            catch (Exception e)
+            {
+                return -30000;
+            }
         }
-  
+
 
         public override ImageIdentifier GetVisualIdentifier()
         {

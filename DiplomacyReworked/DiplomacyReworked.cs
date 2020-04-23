@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,25 +29,33 @@ namespace DiplomacyReworked
             }
         }
 
+        protected override void OnSubModuleLoad()
+        {
+            Harmony harmony = new Harmony("bannerlord.nightmaremen.diplomacyreworked");
+            harmony.PatchAll();
+        }
+
         private void AddBehaviours(Game game, CampaignGameStarter gameInitializer)
         {
+            DiplomacyReworkedInitializer init = new DiplomacyReworkedInitializer();
             try
             {
                 if (game.GameType is Campaign)
                 {
 
-                    DiplomacyReworkedInitializer init = new DiplomacyReworkedInitializer();
                     gameInitializer.AddBehavior(init.menuBehaviour);
                     gameInitializer.AddBehavior(init.kingdomDiplomacyBehaviour);
                     gameInitializer.AddBehavior(init.keepFiefBehaviour);
                     gameInitializer.AddBehavior(init.cdManager);
                     gameInitializer.AddBehavior(init.dataHub);
+                    gameInitializer.AddBehavior(init.deccingBehaviour);
                 }
             }
             catch (Exception e)
             {
                 //not loading the mod should the Game not be a campaign
                 DataHub.DisplayInfoMsg("DiplomacyReworked: An Error occurred, when trying to load the mod into your current game.");
+                init.logger.logError("----", "-----", e.StackTrace, null, e);
             }
         }
 

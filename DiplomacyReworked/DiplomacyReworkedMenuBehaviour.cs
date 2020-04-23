@@ -36,7 +36,13 @@ namespace DiplomacyReworked
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(
                 this, new Action<CampaignGameStarter>(OnAfterNewGameCreated));
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, onSessionLaunched);
+            CampaignEvents.VillageBeingRaided.AddNonSerializedListener(this, onRaidedDelegate);
             //CampaignEvents.KingdomDecisionConcluded.AddNonSerializedListener(this, onDecisionConcludedDelegate);
+        }
+
+        private void onRaidedDelegate(Village obj)
+        {
+            
         }
 
         private void onSessionLaunched(CampaignGameStarter obj)
@@ -150,12 +156,11 @@ namespace DiplomacyReworked
                 PartyBase mainParty = PartyBase.MainParty;
                 MobileParty partyBelongedTo = Hero.OneToOneConversationHero.PartyBelongedTo;
                 PartyBase otherParty = (partyBelongedTo != null) ? partyBelongedTo.Party : null;
-                Hero beneficiaryOfOtherHero = null;
                 BarterManager.BarterContextInitializer contextInitializer = new BarterManager.BarterContextInitializer(BarterManager.Instance.InitializeMakePeaceBarterContext);
                 Barterable[] array = new Barterable[1];;
                 MobileParty conversationParty = MobileParty.ConversationParty;
                 array[0] = new TruceBarterable(oneToOneConversationHero, otherParty,mainHero.MapFaction as Kingdom,otherParty.MapFaction as Kingdom,this.hub);
-                BarterManager.Instance.StartBarterOffer(mainHero, oneToOneConversationHero, otherParty, mainParty, beneficiaryOfOtherHero, contextInitializer, 0, false, array);
+                BarterManager.Instance.StartBarterOffer(mainHero, oneToOneConversationHero, otherParty, mainParty, null, contextInitializer, 0, false, array);
             }
             catch (Exception e)
             {
@@ -181,13 +186,13 @@ namespace DiplomacyReworked
 
         private void selectActionPeaceConsequence(MenuCallbackArgs args)
         {
-            if (!this.currentSelectedFaction.Leader.IsDead || !this.currentSelectedFaction.Leader.IsPrisoner)
+            if (!this.currentSelectedFaction.Leader.IsDead && !this.currentSelectedFaction.Leader.IsPrisoner )
             {
                 this.startConversation(args);
             }
             else
             {
-                DataHub.DisplayInfoMsg("This Factions Leader is currently either dead, or someone took him prisoner");
+                DataHub.DisplayInfoMsg(this.hub.getError("faction_leader_unavailable"));
             }
         }
 

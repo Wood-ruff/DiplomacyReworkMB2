@@ -8,7 +8,7 @@ using System.IO;
 
 namespace DiplomacyReworked
 {
-    class BasicLoggingUtil
+    public class BasicLoggingUtil
     {
         private static string LOGGING_PATH = @"./../../Modules/DiplomacyReworked/ErrorLogs/";
         private static string FILEPATH = @"./../../Modules/DiplomacyReworked/ErrorLogs/Errors.log";

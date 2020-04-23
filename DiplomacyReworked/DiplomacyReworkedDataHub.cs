@@ -15,7 +15,23 @@ using static DiplomacyReworked.DataHub;
 
 namespace DiplomacyReworked 
 {
-    class DataHub : CampaignBehaviorBase
+    public static class Globals
+    {
+        public static List<WarCooldownDataModell> allTruces = new List<WarCooldownDataModell>();
+        public static int isPlayerOnTruce(IFaction relatedFaction)
+        {
+            foreach (WarCooldownDataModell data in Globals.allTruces)
+            {
+                if (data.containsFaction(relatedFaction) && data.isPlayerRelated)
+                {
+                    return data.remainingDays;
+                }
+            }
+            return -1;
+        }
+    }
+
+    public class DataHub : CampaignBehaviorBase
     {
         private BasicLoggingUtil logger = null;
         public const string LOGGING_PATH = "./DiplomacyReworkedLog.txt";
@@ -55,7 +71,7 @@ namespace DiplomacyReworked
             this.languages = new List<XDocument>();
             foreach (String path in Directory.GetFiles(LANGUAGE_SUPPORT_FOLDER))
             {
-                if (File.Exists(path))
+                if (File.Exists(path)&& !path.Contains("Template"))
                 {
                     try
                     {
@@ -108,6 +124,7 @@ namespace DiplomacyReworked
                 foreach (WarCooldownDataModell runout in runOutCds)
                 {
                     this.currentTruces.Remove(runout);
+                    Globals.allTruces.Remove(runout);
                 }
 
             }
@@ -168,6 +185,7 @@ namespace DiplomacyReworked
                 }
             }
 
+            Globals.allTruces.Add(data);
             this.currentTruces.Add(data);
         }
 
@@ -242,6 +260,10 @@ namespace DiplomacyReworked
                 dataStore.SyncData<List<WarCooldownDataModell>>("warCoolDown", ref this.warCoolDown);
                 dataStore.SyncData<List<WarCooldownDataModell>>("currentTruces", ref this.currentTruces);
 
+                if(this.currentTruces != null && !this.currentTruces.IsEmpty() && dataStore.IsLoading)
+                {
+                    Globals.allTruces = this.currentTruces;
+                }
             }
             catch (Exception e)
             {
